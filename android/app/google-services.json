@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "445072558069",
+    "project_id": "memo-words-e2163",
+    "storage_bucket": "memo-words-e2163.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445072558069:android:4f4dd772ddecdf9933c2bc",
+        "android_client_info": {
+          "package_name": "com.example.memo_words"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD98LViPBbpqGRKXp4XKA4fWsijEd4vtXQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
