@@ -20,7 +20,7 @@ class AuthViewModel extends StateNotifier<User?> {
         print('Login warning: $e');
         createAccount(email, password);
       } else {
-        print('Login error: $e');
+        throw Exception('ログインに失敗しました\n$e');
       }
     }
   }
@@ -29,7 +29,7 @@ class AuthViewModel extends StateNotifier<User?> {
     try {
       await _authRepository.createUserWithEmailAndPassword(email, password);
     } catch (e) {
-      print('Account creation error: $e');
+      throw Exception('アカウントの作成に失敗しました\n$e');
     }
   }
 
