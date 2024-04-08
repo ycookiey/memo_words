@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memo_words/provider/word_provider.dart';
+import 'package:memo_words/view/word_card_page.dart';
 import 'package:memo_words/view/word_create_page.dart';
 
 class HomePage extends ConsumerWidget {
@@ -15,14 +16,28 @@ class HomePage extends ConsumerWidget {
         title: const Text('英単語暗記アプリ'),
       ),
       body: Center(
-        child: ElevatedButton(
-          child: Text("単語を追加する"),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const WordCreatePage()),
-            );
-          },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              child: Text("単語を追加する"),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WordCreatePage()),
+                );
+              },
+            ),
+            ElevatedButton(
+              child: Text("単語テスト"),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => WordCardPage()),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
