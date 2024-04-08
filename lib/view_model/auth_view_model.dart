@@ -15,10 +15,10 @@ class AuthViewModel extends StateNotifier<User?> {
       await _authRepository.signInWithEmailAndPassword(email, password);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        createAccount(email, password);
+        await createAccount(email, password);
       } else if (e.code == 'invalid-credential') {
         print('Login warning: $e');
-        createAccount(email, password);
+        await createAccount(email, password);
       } else {
         throw Exception('ログインに失敗しました\n$e');
       }
