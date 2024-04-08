@@ -51,6 +51,12 @@ class WordCreatePage extends ConsumerWidget {
                       return ListTile(
                         title: Text(word.word),
                         subtitle: Text(word.meaning),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            ref.read(wordViewModelProvider.notifier).deleteWords(word.id);
+                          },
+                        ),
                       );
                     },
                   ),

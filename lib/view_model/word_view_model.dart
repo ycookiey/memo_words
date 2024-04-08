@@ -25,4 +25,9 @@ class WordViewModel extends StateNotifier<List<Word>> {
     List<Word> words = await _wordRepository.getWords();
     state = words;
   }
+
+  Future<void> deleteWords(String id) async {
+    await _wordRepository.deleteWords(id);
+    state = [...state.where((element) => element.id != id).toList()];
+  }
 }

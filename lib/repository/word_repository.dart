@@ -31,4 +31,9 @@ class WordRepository {
       );
     }).toList();
   }
+
+  Future<List<Word>> deleteWords(String id) async {
+    await _firestore.collection('words').doc(id).delete();
+    return [];
+  }
 }
