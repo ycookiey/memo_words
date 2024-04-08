@@ -30,4 +30,15 @@ class WordViewModel extends StateNotifier<List<Word>> {
     await _wordRepository.deleteWords(id);
     state = [...state.where((element) => element.id != id).toList()];
   }
+
+  Future<void> updateWords(String id, String word, String meaning) async {
+    await _wordRepository.updateWords(id, word, meaning);
+    state = [
+      for (var element in state)
+        if (element.id == id)
+          Word(id: id, word: word, meaning: meaning, addedOn: element.addedOn)
+        else
+          element
+    ];
+  }
 }

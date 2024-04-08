@@ -36,4 +36,12 @@ class WordRepository {
     await _firestore.collection('words').doc(id).delete();
     return [];
   }
+
+  Future<List<Word>> updateWords(String id, String word, String meaning) async {
+    await _firestore.collection('words').doc(id).update({
+      'word': word,
+      'meaning': meaning,
+    });
+    return [];
+  }
 }

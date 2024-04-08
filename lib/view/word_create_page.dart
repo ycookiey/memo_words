@@ -51,11 +51,57 @@ class WordCreatePage extends ConsumerWidget {
                       return ListTile(
                         title: Text(word.word),
                         subtitle: Text(word.meaning),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            ref.read(wordViewModelProvider.notifier).deleteWords(word.id);
-                          },
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    final wordController = TextEditingController(text: word.word);
+                                    final meaningController = TextEditingController(text: word.meaning);
+                                    return AlertDialog(
+                                      title: const Text('編集'),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          TextFormField(
+                                            controller: wordController,
+                                            decoration: const InputDecoration(labelText: '単語'),
+                                          ),
+                                          TextFormField(
+                                            controller: meaningController,
+                                            decoration: const InputDecoration(labelText: '意味'),
+                                          ),
+                                        ],
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            ref.read(wordViewModelProvider.notifier).updateWords(
+                                              word.id,
+                                              wordController.text,
+                                              meaningController.text,
+                                            );
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('保存'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                ref.read(wordViewModelProvider.notifier).deleteWords(word.id);
+                              },
+                            ),
+                          ],
                         ),
                       );
                     },
