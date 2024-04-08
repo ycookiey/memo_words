@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-List<List> wordData = [["Str1", "Str2"],["Str3", "Str4"],["Str3efw", "Str4"],["Str1", "Str2"],["Str1", "Str2"],["Str1", "Str2"],["Str1", "Str2"],["Str1", "Str2"],["Str1", "Str2"],["Str1", "Str2"],["Str1", "Str2"],["Str0", "Str2"],];
+import 'package:memo_words/provider/word_provider.dart';
 
 class WordCardPage extends StatelessWidget {
   @override
@@ -61,6 +60,7 @@ class FlipCardExample extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var cardNum = ref.watch(countProvider);
+    final words = ref.watch(wordViewModelProvider);
     return Column(
       children: <Widget>[
         FlipCard(
@@ -79,7 +79,7 @@ class FlipCardExample extends ConsumerWidget {
               child: SizedBox(
                 width: 275,
                 height: 380,
-                child: Center(child: Text(wordData[cardNum][0])),
+                child: Center(child: Text(words[cardNum].word)),
               ),
             ),
           ),
@@ -94,7 +94,7 @@ class FlipCardExample extends ConsumerWidget {
               child: SizedBox(
                 width: 275,
                 height: 380,
-                child: Center(child: Text(wordData[cardNum][1])),
+                child: Center(child: Text(words[cardNum].meaning)),
               ),
             ),
           ),
@@ -114,7 +114,7 @@ class FlipCardExample extends ConsumerWidget {
           ElevatedButton(
             child: const Text('進む'),
             onPressed: () {
-              if (cardNum < wordData.length-1) {
+              if (cardNum < words.length-1) {
                 ref.read(countProvider.notifier).state++;
               } else {
                 ref.read(countProvider.notifier).state = 0;
