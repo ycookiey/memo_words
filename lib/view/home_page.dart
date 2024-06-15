@@ -20,7 +20,7 @@ class HomePage extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ElevatedButton(
-              child: Text("単語を追加する"),
+              child: Text("単語リスト"),
               onPressed: () {
                 Navigator.push(
                   context,
