@@ -1,18 +1,26 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-part 'firestore_model.freezed.dart';
 part 'firestore_model.g.dart';
 
-@freezed
-class Word with _$Word {
-  // ignore: invalid_annotation_target
-  @JsonSerializable(explicitToJson: true)
-  const factory Word({
-    required String id,
-    required String word,
-    required String meaning,
-    DateTime? addedOn,
-  }) = _Word;
+@JsonSerializable()
+class Word {
+  final String id;
+  final String word;
+  final String meaning;
+  final DateTime? addedOn;
 
-  factory Word.fromJson(Map<String, dynamic> json) => _$WordFromJson(json);
+  Word(
+      {required this.id,
+      required this.word,
+      required this.meaning,
+      this.addedOn});
+
+  factory Word.fromJson(Map<String, dynamic> json) {
+    json['addedOn'] =
+        (json['addedOn'] as Timestamp?)?.toDate().toIso8601String();
+    return _$WordFromJson(json);
+  }
+
+  Map<String, dynamic> toJson() => _$WordToJson(this);
 }

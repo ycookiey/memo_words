@@ -35,7 +35,8 @@ class WordCreatePage extends ConsumerWidget {
             onPressed: () {
               final word = wordController.text;
               final meaning = meaningController.text;
-              ref.read(wordViewModelProvider.notifier).addWord(word, meaning);
+              ref.read(wordViewModelProvider.notifier).addWord(
+                  'sampleListName', word, meaning); //TODO:listNameを引数に追加
               wordController.clear();
               meaningController.clear();
             },
@@ -60,8 +61,11 @@ class WordCreatePage extends ConsumerWidget {
                                 showDialog(
                                   context: context,
                                   builder: (context) {
-                                    final wordController = TextEditingController(text: word.word);
-                                    final meaningController = TextEditingController(text: word.meaning);
+                                    final wordController =
+                                        TextEditingController(text: word.word);
+                                    final meaningController =
+                                        TextEditingController(
+                                            text: word.meaning);
                                     return AlertDialog(
                                       title: const Text('編集'),
                                       content: Column(
@@ -69,22 +73,27 @@ class WordCreatePage extends ConsumerWidget {
                                         children: [
                                           TextFormField(
                                             controller: wordController,
-                                            decoration: const InputDecoration(labelText: '単語'),
+                                            decoration: const InputDecoration(
+                                                labelText: '単語'),
                                           ),
                                           TextFormField(
                                             controller: meaningController,
-                                            decoration: const InputDecoration(labelText: '意味'),
+                                            decoration: const InputDecoration(
+                                                labelText: '意味'),
                                           ),
                                         ],
                                       ),
                                       actions: [
                                         TextButton(
                                           onPressed: () {
-                                            ref.read(wordViewModelProvider.notifier).updateWords(
-                                              word.id,
-                                              wordController.text,
-                                              meaningController.text,
-                                            );
+                                            ref
+                                                .read(wordViewModelProvider
+                                                    .notifier)
+                                                .updateWords(
+                                                  word.id,
+                                                  wordController.text,
+                                                  meaningController.text,
+                                                );
                                             Navigator.pop(context);
                                           },
                                           child: const Text('保存'),
@@ -98,7 +107,9 @@ class WordCreatePage extends ConsumerWidget {
                             IconButton(
                               icon: const Icon(Icons.delete),
                               onPressed: () {
-                                ref.read(wordViewModelProvider.notifier).deleteWords(word.id);
+                                ref
+                                    .read(wordViewModelProvider.notifier)
+                                    .deleteWords(word.id);
                               },
                             ),
                           ],

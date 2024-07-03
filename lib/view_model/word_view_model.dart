@@ -14,11 +14,11 @@ class WordViewModel extends StateNotifier<List<Word>> {
     state = words;
   }
 
-  Future<void> addWord(String word, String meaning) async {
-    final newWord = await _wordRepository.addWord(word, meaning);
-    if (newWord != null) {
-      state = [...state, newWord];
-    }
+  Future<void> addWord(
+      String listName, String englishWord, String japaneseMeaning) async {
+    Word newWord =
+        await _wordRepository.addWord(listName, englishWord, japaneseMeaning);
+    state = [...state, newWord];
   }
 
   Future<void> getWords() async {
