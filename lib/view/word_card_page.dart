@@ -15,6 +15,7 @@ class WordCardPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
+            const Progress(),
             FlipCardExample(),
             const Others(),
           ],
@@ -73,6 +74,27 @@ class FlipCardExample extends ConsumerWidget {
               ),
             ),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class Progress extends ConsumerWidget {
+  const Progress({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var cardNum = ref.watch(countProvider);
+    final words = ref.watch(wordViewModelProvider);
+    return Column(
+      children: [
+        Text('${cardNum + 1} / ${words.length}'),
+        const SizedBox(
+          height: 5,
+        ),
+        LinearProgressIndicator(
+          value: cardNum / words.length,
+          backgroundColor: const Color(0xffcec5f0),
         ),
       ],
     );
