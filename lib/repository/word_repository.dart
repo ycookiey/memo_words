@@ -36,7 +36,8 @@ class WordRepository {
         'id': wordRef.id,
         'word': englishWord,
         'meaning': japaneseMeaning,
-        'addedOn': DateTime.now(),
+        'addedOn': FieldValue.serverTimestamp(),
+        'mistakenDates': [],
       });
     } else {
       DocumentReference listRef = querySnapshot.docs.first.reference;
@@ -45,7 +46,8 @@ class WordRepository {
         'id': wordRef.id,
         'word': englishWord,
         'meaning': japaneseMeaning,
-        'addedOn': DateTime.now(),
+        'addedOn': FieldValue.serverTimestamp(),
+        'mistakenDates': [],
       });
     }
 
@@ -54,6 +56,7 @@ class WordRepository {
       word: englishWord,
       meaning: japaneseMeaning,
       addedOn: DateTime.now(),
+      mistakenDates: [],
     );
   }
 
@@ -132,6 +135,35 @@ class WordRepository {
         await wordSnapshot.docs.first.reference.update({
           'word': newWord,
           'meaning': newMeaning,
+        });
+        break;
+      }
+    }
+  }
+
+  Future<void> addMistakenDate(String wordId) async {
+    User? user = firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception('No authenticated user found');
+    }
+    String userId = user.uid;
+
+    QuerySnapshot listSnapshot = await firestore
+        .collection('users')
+        .doc(userId)
+        .collection('wordLists')
+        .get();
+
+    for (var listDoc in listSnapshot.docs) {
+      QuerySnapshot wordSnapshot = await listDoc.reference
+          .collection('words')
+          .where('id', isEqualTo: wordId)
+          .get();
+
+      if (wordSnapshot.docs.isNotEmpty) {
+        await wordSnapshot.docs.first.reference.update({
+          'mistakenDates':
+              FieldValue.arrayUnion([FieldValue.serverTimestamp()]),
         });
         break;
       }

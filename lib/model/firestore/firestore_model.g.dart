@@ -13,6 +13,9 @@ Word _$WordFromJson(Map<String, dynamic> json) => Word(
       addedOn: json['addedOn'] == null
           ? null
           : DateTime.parse(json['addedOn'] as String),
+      mistakenDates: (json['mistakenDates'] as List<dynamic>?)
+          ?.map((e) => DateTime.parse(e as String))
+          .toList(),
     );
 
 Map<String, dynamic> _$WordToJson(Word instance) => <String, dynamic>{
@@ -20,4 +23,6 @@ Map<String, dynamic> _$WordToJson(Word instance) => <String, dynamic>{
       'word': instance.word,
       'meaning': instance.meaning,
       'addedOn': instance.addedOn?.toIso8601String(),
+      'mistakenDates':
+          instance.mistakenDates.map((e) => e.toIso8601String()).toList(),
     };

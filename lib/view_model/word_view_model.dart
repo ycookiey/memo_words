@@ -35,8 +35,17 @@ class WordViewModel extends StateNotifier<List<Word>> {
     await _wordRepository.updateWord(id, word, meaning);
     state = state
         .map((element) => element.id == id
-            ? Word(
-                id: id, word: word, meaning: meaning, addedOn: element.addedOn)
+            ? element.copyWith(word: word, meaning: meaning)
+            : element)
+        .toList();
+  }
+
+  Future<void> addMistakenDate(String id) async {
+    await _wordRepository.addMistakenDate(id);
+    state = state
+        .map((element) => element.id == id
+            ? element.copyWith(
+                mistakenDates: [...element.mistakenDates, DateTime.now()])
             : element)
         .toList();
   }
