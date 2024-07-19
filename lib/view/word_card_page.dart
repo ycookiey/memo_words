@@ -9,6 +9,19 @@ class WordCardPage extends StatelessWidget {
   return Scaffold(
       appBar: AppBar(
         title: const Text('test'),
+        actions: [
+          IconButton(onPressed: () => {
+            showModalBottomSheet<void>(
+              context: context,
+              backgroundColor: Colors.transparent,
+              isScrollControlled: true,
+              enableDrag: true,
+              barrierColor: Colors.black.withOpacity(0.5),
+              builder: (context) {
+                return const _BottomSheet();
+              }),
+          }, icon: const Icon(Icons.settings)),
+        ],
       ),
       body: Center(
         child: Column(
@@ -25,8 +38,58 @@ class WordCardPage extends StatelessWidget {
   }
 }
 
+class _BottomSheet extends ConsumerWidget {
+  const _BottomSheet({super.key});
+  
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var isReverse = ref.watch(reverseProvider);
+    return Container(
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      margin: const EdgeInsets.only(top: 80),
+      child: Column(
+        children: [
+          const SizedBox(
+            height: 10,
+          ),
+          const Row(
+            children: [
+              
+              Text(
+                'オプション',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          SwitchListTile(
+            title: const Text('反転'),
+            value: isReverse,
+            onChanged: (value) {
+              ref.read(reverseProvider.notifier).state = value;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 final countProvider = StateProvider((ref) {
   return 0;
+});
+
+final reverseProvider = StateProvider((ref) {
+  return false;
 });
 
 class FlipCardExample extends ConsumerWidget {
@@ -35,8 +98,41 @@ class FlipCardExample extends ConsumerWidget {
   
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    var isReverse = ref.watch(reverseProvider);
     var cardNum = ref.watch(countProvider);
     final words = ref.watch(wordViewModelProvider);
+    Widget frontWidget = Card(
+      color: const Color(0xffcce3f3),
+      elevation: 10,
+      shadowColor: Colors.black,
+      child: InkWell(
+        onTap: () {
+          flipController.flipcard();
+        },
+        child: SizedBox(
+          width: 275,
+          height: 380,
+          child: Center(child: Text(words[cardNum].word)),
+        ),
+      ),
+    );
+
+    Widget backWidget = Card(
+      color: const Color(0xffcce3f3),
+      elevation: 10,
+      shadowColor: Colors.black,
+      child: InkWell(
+        onTap: () {
+          flipController.flipcard();
+        },
+        child: SizedBox(
+          width: 275,
+          height: 380,
+          child: Center(child: Text(words[cardNum].meaning)),
+        ),
+      ),
+    );
+
     return Column(
       children: <Widget>[
         FlipCard(
@@ -44,36 +140,8 @@ class FlipCardExample extends ConsumerWidget {
           controller: flipController,
           animationDuration: const Duration(milliseconds: 300),
           axis: FlipAxis.horizontal,
-          frontWidget: Card(
-            color: const Color(0xffcce3f3),
-            elevation: 10,
-            shadowColor: Colors.black,
-            child: InkWell(
-              onTap: () {
-                flipController.flipcard();
-              },
-              child: SizedBox(
-                width: 275,
-                height: 380,
-                child: Center(child: Text(words[cardNum].word)),
-              ),
-            ),
-          ),
-          backWidget: Card(
-            color: const Color(0xffcce3f3),
-            elevation: 10,
-            shadowColor: Colors.black,
-            child: InkWell(
-              onTap: () {
-                flipController.flipcard();
-              },
-              child: SizedBox(
-                width: 275,
-                height: 380,
-                child: Center(child: Text(words[cardNum].meaning)),
-              ),
-            ),
-          ),
+          frontWidget: isReverse ? backWidget : frontWidget,
+          backWidget: isReverse ? frontWidget : backWidget,
         ),
       ],
     );
@@ -117,6 +185,7 @@ class Others extends ConsumerWidget {
               ref.read(countProvider.notifier).state++;
             } else {
               ref.read(countProvider.notifier).state = 0;
+              ref.read(reverseProvider.notifier).state = false;
               Navigator.pop(context);
             }
           },
@@ -131,6 +200,7 @@ class Others extends ConsumerWidget {
               ref.read(countProvider.notifier).state++;
             } else {
               ref.read(countProvider.notifier).state = 0;
+              ref.read(reverseProvider.notifier).state = false;
               Navigator.pop(context);
             }
           },
