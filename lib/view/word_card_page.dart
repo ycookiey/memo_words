@@ -61,7 +61,6 @@ class _BottomSheet extends ConsumerWidget {
           ),
           const Row(
             children: [
-              
               Text(
                 'オプション',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -112,7 +111,7 @@ class FlipCardExample extends ConsumerWidget {
         child: SizedBox(
           width: 275,
           height: 380,
-          child: Center(child: Text(words[cardNum].word)),
+          child: words.isEmpty ? const SizedBox() : Center(child: Text(words[cardNum].word)),
         ),
       ),
     );
@@ -128,14 +127,16 @@ class FlipCardExample extends ConsumerWidget {
         child: SizedBox(
           width: 275,
           height: 380,
-          child: Center(child: Text(words[cardNum].meaning)),
+          child: words.isEmpty ? const SizedBox() : Center(child: Text(words[cardNum].meaning)),
         ),
       ),
     );
 
     return Column(
       children: <Widget>[
-        FlipCard(
+        words.isEmpty
+          ? const Text('単語がありません')
+          : FlipCard(
           rotateSide: RotateSide.bottom,
           controller: flipController,
           animationDuration: const Duration(milliseconds: 300),
@@ -155,16 +156,17 @@ class Progress extends ConsumerWidget {
     var cardNum = ref.watch(countProvider);
     final words = ref.watch(wordViewModelProvider);
     return Column(
-      children: [
-        Text('${cardNum + 1} / ${words.length}'),
-        const SizedBox(
-          height: 5,
-        ),
-        LinearProgressIndicator(
-          value: cardNum / words.length,
-          backgroundColor: const Color(0xffcec5f0),
-        ),
-      ],
+      children: words.isEmpty ? [const SizedBox()] 
+        : [
+          Text('${cardNum + 1} / ${words.length}'),
+          const SizedBox(
+            height: 5,
+          ),
+          LinearProgressIndicator(
+            value: cardNum / words.length,
+            backgroundColor: const Color(0xffcec5f0),
+          ),
+        ],
     );
   }
 }
@@ -177,46 +179,47 @@ class Others extends ConsumerWidget {
     var cardNum = ref.watch(countProvider);
     final words = ref.watch(wordViewModelProvider);
     return Column(
-      children: [
-        ElevatedButton(
-          child: const Text('〇'),
-          onPressed: () {
-            if (cardNum < words.length-1) {
-              ref.read(countProvider.notifier).state++;
-            } else {
-              ref.read(countProvider.notifier).state = 0;
-              ref.read(reverseProvider.notifier).state = false;
-              Navigator.pop(context);
-            }
-          },
-        ),
-        const SizedBox(
-          height: 10,
-        ),
-        ElevatedButton(
-          child: const Text('×'),
-          onPressed: () {
-            if (cardNum < words.length-1) {
-              ref.read(countProvider.notifier).state++;
-            } else {
-              ref.read(countProvider.notifier).state = 0;
-              ref.read(reverseProvider.notifier).state = false;
-              Navigator.pop(context);
-            }
-          },
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        ElevatedButton(
-          child: const Text('戻る'),
-          onPressed: () {
-            if (cardNum > 0) {
-              ref.read(countProvider.notifier).state--;
-            }
-          },
-        ),
-      ],
+      children: words.isEmpty ? [const SizedBox()]
+        : [
+          ElevatedButton(
+            child: const Text('〇'),
+            onPressed: () {
+              if (cardNum < words.length-1) {
+                ref.read(countProvider.notifier).state++;
+              } else {
+                ref.read(countProvider.notifier).state = 0;
+                ref.read(reverseProvider.notifier).state = false;
+                Navigator.pop(context);
+              }
+            },
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          ElevatedButton(
+            child: const Text('×'),
+            onPressed: () {
+              if (cardNum < words.length-1) {
+                ref.read(countProvider.notifier).state++;
+              } else {
+                ref.read(countProvider.notifier).state = 0;
+                ref.read(reverseProvider.notifier).state = false;
+                Navigator.pop(context);
+              }
+            },
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          ElevatedButton(
+            child: const Text('戻る'),
+            onPressed: () {
+              if (cardNum > 0) {
+                ref.read(countProvider.notifier).state--;
+              }
+            },
+          ),
+        ],
     );
   }
 }
