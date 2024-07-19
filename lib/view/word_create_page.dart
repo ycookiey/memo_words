@@ -89,7 +89,7 @@ class WordCreatePage extends ConsumerWidget {
                                             ref
                                                 .read(wordViewModelProvider
                                                     .notifier)
-                                                .updateWords(
+                                                .updateWord(
                                                   word.id,
                                                   wordController.text,
                                                   meaningController.text,
@@ -109,7 +109,7 @@ class WordCreatePage extends ConsumerWidget {
                               onPressed: () {
                                 ref
                                     .read(wordViewModelProvider.notifier)
-                                    .deleteWords(word.id);
+                                    .deleteWord(word.id);
                               },
                             ),
                           ],

@@ -82,16 +82,59 @@ class WordRepository {
     return words;
   }
 
-  Future<List<Word>> deleteWords(String id) async {
-    await firestore.collection('words').doc(id).delete();
-    return [];
+  Future<void> deleteWord(String wordId) async {
+    User? user = firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception('No authenticated user found');
+    }
+    String userId = user.uid;
+
+    QuerySnapshot listSnapshot = await firestore
+        .collection('users')
+        .doc(userId)
+        .collection('wordLists')
+        .get();
+
+    for (var listDoc in listSnapshot.docs) {
+      QuerySnapshot wordSnapshot = await listDoc.reference
+          .collection('words')
+          .where('id', isEqualTo: wordId)
+          .get();
+
+      if (wordSnapshot.docs.isNotEmpty) {
+        await wordSnapshot.docs.first.reference.delete();
+        break;
+      }
+    }
   }
 
-  Future<List<Word>> updateWords(String id, String word, String meaning) async {
-    await firestore.collection('words').doc(id).update({
-      'word': word,
-      'meaning': meaning,
-    });
-    return [];
+  Future<void> updateWord(
+      String wordId, String newWord, String newMeaning) async {
+    User? user = firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception('No authenticated user found');
+    }
+    String userId = user.uid;
+
+    QuerySnapshot listSnapshot = await firestore
+        .collection('users')
+        .doc(userId)
+        .collection('wordLists')
+        .get();
+
+    for (var listDoc in listSnapshot.docs) {
+      QuerySnapshot wordSnapshot = await listDoc.reference
+          .collection('words')
+          .where('id', isEqualTo: wordId)
+          .get();
+
+      if (wordSnapshot.docs.isNotEmpty) {
+        await wordSnapshot.docs.first.reference.update({
+          'word': newWord,
+          'meaning': newMeaning,
+        });
+        break;
+      }
+    }
   }
 }
