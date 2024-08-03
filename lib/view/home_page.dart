@@ -4,52 +4,97 @@ import 'package:memo_words/provider/word_provider.dart';
 import 'package:memo_words/view/word_card_page.dart';
 import 'package:memo_words/view/word_create_page.dart';
 
+final shuffledProvider = StateProvider<bool>((ref) => false);
+
 class HomePage extends ConsumerWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final words = ref.watch(wordViewModelProvider);
-    bool isTrue = ref.watch(shuffledProvider);
+    final flashcards = ref.watch(wordViewModelProvider);
+    final isShuffled = ref.watch(shuffledProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('英単語暗記アプリ'),
+        title: const Text('単語帳アプリ'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ElevatedButton(
-              child: Text("単語リスト"),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const WordCreatePage()),
-                );
-              },
+      body: Column(
+        children: [
+          Expanded(
+            child: flashcards.isEmpty
+                ? const Center(child: Text('単語帳がありません。新しい単語帳を作成してください。'))
+                : ListView.builder(
+                    itemCount: flashcards.length,
+                    itemBuilder: (context, index) {
+                      final flashcard = flashcards[index];
+                      return ListTile(
+                        title: Text(flashcard.name),
+                        subtitle: Text('${flashcard.words.length} 個の単語'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                ref
+                                    .read(selectedFlashcardIdProvider.notifier)
+                                    .state = flashcard.id;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const WordCreatePage()),
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.play_arrow),
+                              onPressed: () {
+                                ref
+                                    .read(selectedFlashcardIdProvider.notifier)
+                                    .state = flashcard.id;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          WordCardPage(isTrue: isShuffled)),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                ElevatedButton(
+                  child: const Text("新しい単語帳を作成"),
+                  onPressed: () {
+                    ref.read(selectedFlashcardIdProvider.notifier).state = null;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const WordCreatePage()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('単語シャッフル'),
+                  value: isShuffled,
+                  onChanged: (value) {
+                    ref.read(shuffledProvider.notifier).state = value;
+                  },
+                ),
+              ],
             ),
-            ElevatedButton(
-              child: Text("単語テスト"),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => WordCardPage(isTrue)),
-                );
-              },
-            ),
-            SwitchListTile(
-              title: const Text('単語シャッフル'),
-              value: isTrue,
-              onChanged: (value) {
-                ref.read(shuffledProvider.notifier).state = value;
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
-
-final shuffledProvider = StateProvider<bool>((ref) => false);

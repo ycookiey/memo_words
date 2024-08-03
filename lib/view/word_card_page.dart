@@ -4,10 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memo_words/provider/word_provider.dart';
 import 'dart:math';
 
+final countProvider = StateProvider((ref) => 0);
+final reverseProvider = StateProvider((ref) => false);
+final shuffledProvider = StateProvider<bool>((ref) => false);
+final shuffledListProvider = StateProvider<List<int>>((ref) => []);
+
 class WordCardPage extends ConsumerWidget {
-  const WordCardPage(this.isTrue, {super.key});
+  const WordCardPage({this.isTrue = false, super.key});
   final bool isTrue;
-  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var isShuffled = ref.watch(shuffledProvider.notifier);
@@ -16,21 +21,23 @@ class WordCardPage extends ConsumerWidget {
         isShuffled.state = true;
       }
     });
+
+    final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
+    if (selectedFlashcardId == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('単語カード')),
+        body: const Center(child: Text('単語帳が選択されていません')),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('test'),
         actions: [
-          IconButton(onPressed: () => {
-            showModalBottomSheet<void>(
-              context: context,
-              backgroundColor: Colors.transparent,
-              isScrollControlled: true,
-              enableDrag: true,
-              barrierColor: Colors.black.withOpacity(0.5),
-              builder: (context) {
-                return const _BottomSheet();
-              }),
-          }, icon: const Icon(Icons.settings)),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => _showSettingsBottomSheet(context),
+          ),
         ],
       ),
       body: Center(
@@ -46,11 +53,24 @@ class WordCardPage extends ConsumerWidget {
       ),
     );
   }
+
+  void _showSettingsBottomSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      enableDrag: true,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) {
+        return const _BottomSheet();
+      },
+    );
+  }
 }
 
 class _BottomSheet extends ConsumerWidget {
   const _BottomSheet({super.key});
-  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var isReverse = ref.watch(reverseProvider);
@@ -66,9 +86,7 @@ class _BottomSheet extends ConsumerWidget {
       margin: const EdgeInsets.only(top: 80),
       child: Column(
         children: [
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           const Row(
             children: [
               Text(
@@ -77,9 +95,7 @@ class _BottomSheet extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           SwitchListTile(
             title: const Text('反転'),
             value: isReverse,
@@ -92,11 +108,6 @@ class _BottomSheet extends ConsumerWidget {
     );
   }
 }
-
-final countProvider = StateProvider((ref) => 0);
-final reverseProvider = StateProvider((ref) => false);
-final shuffledProvider = StateProvider<bool>((ref) => false);
-final shuffledListProvider = StateProvider<List<int>>((ref) => []);
 
 class NumberShuffle {
   List<int> getShuffleList(int inputNum) {
@@ -120,7 +131,7 @@ class _FlipCardsState extends ConsumerState<FlipCards> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      var words = ref.read(wordViewModelProvider);
+      var words = ref.read(selectedFlashcardWordsProvider);
       if (words.isNotEmpty && ref.read(shuffledListProvider).isEmpty) {
         var shuffledList = NumberShuffle().getShuffleList(words.length);
         ref.read(shuffledListProvider.notifier).state = shuffledList;
@@ -134,65 +145,41 @@ class _FlipCardsState extends ConsumerState<FlipCards> {
     var cardNum = ref.watch(countProvider);
     var isShuffled = ref.watch(shuffledProvider);
     var shuffledCardNum = ref.watch(shuffledListProvider);
-    final words = ref.watch(wordViewModelProvider);
+    final words = ref.watch(selectedFlashcardWordsProvider);
 
-    Widget frontWidget = Card(
-      color: const Color(0xffcce3f3),
-      elevation: 10,
-      shadowColor: Colors.black,
-      child: InkWell(
-        onTap: () {
-          flipController.flipcard();
-        },
-        child: SizedBox(
-          width: 275,
-          height: 380,
-          child: words.isEmpty
-              ? const SizedBox()
-              : Center(
-                  child: isShuffled
-                      ? Text(words[shuffledCardNum[cardNum]].word)
-                      : Text(words[cardNum].word),
-                ),
+    Widget buildCard(String content) {
+      return Card(
+        color: const Color(0xffcce3f3),
+        elevation: 10,
+        shadowColor: Colors.black,
+        child: InkWell(
+          onTap: () {
+            flipController.flipcard();
+          },
+          child: SizedBox(
+            width: 275,
+            height: 380,
+            child: Center(child: Text(content)),
+          ),
         ),
-      ),
-    );
+      );
+    }
 
-    Widget backWidget = Card(
-      color: const Color(0xffcce3f3),
-      elevation: 10,
-      shadowColor: Colors.black,
-      child: InkWell(
-        onTap: () {
-          flipController.flipcard();
-        },
-        child: SizedBox(
-          width: 275,
-          height: 380,
-          child: words.isEmpty
-              ? const SizedBox()
-              : Center(
-                  child: isShuffled
-                      ? Text(words[shuffledCardNum[cardNum]].meaning)
-                      : Text(words[cardNum].meaning),
-                ),
-        ),
-      ),
-    );
+    if (words.isEmpty) {
+      return const Text('単語がありません');
+    }
 
-    return Column(
-      children: <Widget>[
-        words.isEmpty
-            ? const Text('単語がありません')
-            : FlipCard(
-                rotateSide: RotateSide.bottom,
-                controller: flipController,
-                animationDuration: const Duration(milliseconds: 300),
-                axis: FlipAxis.horizontal,
-                frontWidget: isReverse ? backWidget : frontWidget,
-                backWidget: isReverse ? frontWidget : backWidget,
-              ),
-      ],
+    int currentIndex = isShuffled ? shuffledCardNum[cardNum] : cardNum;
+    Widget frontWidget = buildCard(words[currentIndex].word);
+    Widget backWidget = buildCard(words[currentIndex].meaning);
+
+    return FlipCard(
+      rotateSide: RotateSide.bottom,
+      controller: flipController,
+      animationDuration: const Duration(milliseconds: 300),
+      axis: FlipAxis.horizontal,
+      frontWidget: isReverse ? backWidget : frontWidget,
+      backWidget: isReverse ? frontWidget : backWidget,
     );
   }
 }
@@ -202,19 +189,18 @@ class Progress extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var cardNum = ref.watch(countProvider);
-    final words = ref.watch(wordViewModelProvider);
+    final words = ref.watch(selectedFlashcardWordsProvider);
     return Column(
-      children: words.isEmpty ? [const SizedBox()] 
-        : [
-          Text('${cardNum + 1} / ${words.length}'),
-          const SizedBox(
-            height: 5,
-          ),
-          LinearProgressIndicator(
-            value: cardNum / words.length,
-            backgroundColor: const Color(0xffcec5f0),
-          ),
-        ],
+      children: words.isEmpty
+          ? [const SizedBox()]
+          : [
+              Text('${cardNum + 1} / ${words.length}'),
+              const SizedBox(height: 5),
+              LinearProgressIndicator(
+                value: words.isEmpty ? 0 : (cardNum + 1) / words.length,
+                backgroundColor: const Color(0xffcec5f0),
+              ),
+            ],
     );
   }
 }
@@ -225,49 +211,67 @@ class Buttons extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var cardNum = ref.watch(countProvider);
-    final words = ref.watch(wordViewModelProvider);
+    final words = ref.watch(selectedFlashcardWordsProvider);
+    final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
+
+    void nextWord() {
+      if (cardNum < words.length - 1) {
+        ref.read(countProvider.notifier).state++;
+      } else {
+        _showCompletionDialog(context);
+      }
+    }
+
     return Column(
-      children: words.isEmpty ? [const SizedBox()]
-        : [
-          ElevatedButton(
-            child: const Text('〇'),
+      children: words.isEmpty
+          ? [const SizedBox()]
+          : [
+              ElevatedButton(
+                child: const Text('〇'),
+                onPressed: nextWord,
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                child: const Text('×'),
+                onPressed: () {
+                  if (selectedFlashcardId != null) {
+                    ref.read(wordViewModelProvider.notifier).addMistakenDate(
+                          selectedFlashcardId,
+                          words[cardNum].id,
+                        );
+                  }
+                  nextWord();
+                },
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                child: const Text('戻る'),
+                onPressed: () {
+                  if (cardNum > 0) {
+                    ref.read(countProvider.notifier).state--;
+                  }
+                },
+              ),
+            ],
+    );
+  }
+
+  void _showCompletionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('テスト完了'),
+        content: const Text('すべての単語をテストしました。'),
+        actions: [
+          TextButton(
+            child: const Text('OK'),
             onPressed: () {
-              if (cardNum < words.length-1) {
-                ref.read(countProvider.notifier).state++;
-              } else {
-                ref.read(countProvider.notifier).state = 0;
-                ref.read(reverseProvider.notifier).state = false;
-                Navigator.pop(context);
-              }
-            },
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          ElevatedButton(
-            child: const Text('×'),
-            onPressed: () {
-              if (cardNum < words.length-1) {
-                ref.read(countProvider.notifier).state++;
-              } else {
-                ref.read(countProvider.notifier).state = 0;
-                ref.read(reverseProvider.notifier).state = false;
-                Navigator.pop(context);
-              }
-            },
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          ElevatedButton(
-            child: const Text('戻る'),
-            onPressed: () {
-              if (cardNum > 0) {
-                ref.read(countProvider.notifier).state--;
-              }
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
             },
           ),
         ],
+      ),
     );
   }
 }

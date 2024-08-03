@@ -20,14 +20,16 @@ class Word {
   }) : this.mistakenDates = mistakenDates ?? [];
 
   factory Word.fromJson(Map<String, dynamic> json) {
-    json['addedOn'] =
-        (json['addedOn'] as Timestamp?)?.toDate().toIso8601String();
-    json['mistakenDates'] = (json['mistakenDates'] as List<dynamic>?)
-            ?.map((timestamp) =>
-                (timestamp as Timestamp).toDate().toIso8601String())
-            .toList() ??
-        [];
-    return _$WordFromJson(json);
+    return Word(
+      id: json['id'] as String,
+      word: json['word'] as String,
+      meaning: json['meaning'] as String,
+      addedOn: (json['addedOn'] as Timestamp?)?.toDate(),
+      mistakenDates: (json['mistakenDates'] as List<dynamic>?)
+              ?.map((e) => (e as Timestamp).toDate())
+              .toList() ??
+          [],
+    );
   }
 
   Map<String, dynamic> toJson() => _$WordToJson(this);
