@@ -2,11 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memo_words/provider/word_provider.dart';
+import 'dart:math';
 
-class WordCardPage extends StatelessWidget {
+class WordCardPage extends ConsumerWidget {
+  const WordCardPage(this.isTrue, {super.key});
+  final bool isTrue;
+  
   @override
-  Widget build(BuildContext context) {
-  return Scaffold(
+  Widget build(BuildContext context, WidgetRef ref) {
+    var isShuffled = ref.watch(shuffledProvider.notifier);
+    Future.microtask(() {
+      if (isTrue == true) {
+        isShuffled.state = true;
+      }
+    });
+    return Scaffold(
       appBar: AppBar(
         title: const Text('test'),
         actions: [
@@ -29,8 +39,8 @@ class WordCardPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             const Progress(),
-            FlipCardExample(),
-            const Others(),
+            FlipCards(),
+            const Buttons(),
           ],
         ),
       ),
@@ -83,23 +93,49 @@ class _BottomSheet extends ConsumerWidget {
   }
 }
 
-final countProvider = StateProvider((ref) {
-  return 0;
-});
+final countProvider = StateProvider((ref) => 0);
+final reverseProvider = StateProvider((ref) => false);
+final shuffledProvider = StateProvider<bool>((ref) => false);
+final shuffledListProvider = StateProvider<List<int>>((ref) => []);
 
-final reverseProvider = StateProvider((ref) {
-  return false;
-});
+class NumberShuffle {
+  List<int> getShuffleList(int inputNum) {
+    List<int> list = List.generate(inputNum, (index) => index);
+    list.shuffle();
+    return list;
+  }
+}
 
-class FlipCardExample extends ConsumerWidget {
-  FlipCardExample({super.key});
-  final flipController = FlipCardController();
-  
+class FlipCards extends ConsumerStatefulWidget {
+  FlipCards({super.key});
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FlipCards> createState() => _FlipCardsState();
+}
+
+class _FlipCardsState extends ConsumerState<FlipCards> {
+  final flipController = FlipCardController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      var words = ref.read(wordViewModelProvider);
+      if (words.isNotEmpty && ref.read(shuffledListProvider).isEmpty) {
+        var shuffledList = NumberShuffle().getShuffleList(words.length);
+        ref.read(shuffledListProvider.notifier).state = shuffledList;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     var isReverse = ref.watch(reverseProvider);
     var cardNum = ref.watch(countProvider);
+    var isShuffled = ref.watch(shuffledProvider);
+    var shuffledCardNum = ref.watch(shuffledListProvider);
     final words = ref.watch(wordViewModelProvider);
+
     Widget frontWidget = Card(
       color: const Color(0xffcce3f3),
       elevation: 10,
@@ -111,7 +147,13 @@ class FlipCardExample extends ConsumerWidget {
         child: SizedBox(
           width: 275,
           height: 380,
-          child: words.isEmpty ? const SizedBox() : Center(child: Text(words[cardNum].word)),
+          child: words.isEmpty
+              ? const SizedBox()
+              : Center(
+                  child: isShuffled
+                      ? Text(words[shuffledCardNum[cardNum]].word)
+                      : Text(words[cardNum].word),
+                ),
         ),
       ),
     );
@@ -127,7 +169,13 @@ class FlipCardExample extends ConsumerWidget {
         child: SizedBox(
           width: 275,
           height: 380,
-          child: words.isEmpty ? const SizedBox() : Center(child: Text(words[cardNum].meaning)),
+          child: words.isEmpty
+              ? const SizedBox()
+              : Center(
+                  child: isShuffled
+                      ? Text(words[shuffledCardNum[cardNum]].meaning)
+                      : Text(words[cardNum].meaning),
+                ),
         ),
       ),
     );
@@ -135,15 +183,15 @@ class FlipCardExample extends ConsumerWidget {
     return Column(
       children: <Widget>[
         words.isEmpty
-          ? const Text('単語がありません')
-          : FlipCard(
-          rotateSide: RotateSide.bottom,
-          controller: flipController,
-          animationDuration: const Duration(milliseconds: 300),
-          axis: FlipAxis.horizontal,
-          frontWidget: isReverse ? backWidget : frontWidget,
-          backWidget: isReverse ? frontWidget : backWidget,
-        ),
+            ? const Text('単語がありません')
+            : FlipCard(
+                rotateSide: RotateSide.bottom,
+                controller: flipController,
+                animationDuration: const Duration(milliseconds: 300),
+                axis: FlipAxis.horizontal,
+                frontWidget: isReverse ? backWidget : frontWidget,
+                backWidget: isReverse ? frontWidget : backWidget,
+              ),
       ],
     );
   }
@@ -171,8 +219,8 @@ class Progress extends ConsumerWidget {
   }
 }
 
-class Others extends ConsumerWidget {
-  const Others({super.key});
+class Buttons extends ConsumerWidget {
+  const Buttons({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

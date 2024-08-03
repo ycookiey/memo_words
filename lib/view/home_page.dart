@@ -10,6 +10,7 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final words = ref.watch(wordViewModelProvider);
+    bool isTrue = ref.watch(shuffledProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -33,8 +34,15 @@ class HomePage extends ConsumerWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => WordCardPage()),
+                  MaterialPageRoute(builder: (context) => WordCardPage(isTrue)),
                 );
+              },
+            ),
+            SwitchListTile(
+              title: const Text('単語シャッフル'),
+              value: isTrue,
+              onChanged: (value) {
+                ref.read(shuffledProvider.notifier).state = value;
               },
             ),
           ],
@@ -43,3 +51,5 @@ class HomePage extends ConsumerWidget {
     );
   }
 }
+
+final shuffledProvider = StateProvider<bool>((ref) => false);
