@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memo_words/main.dart';
 import 'package:memo_words/provider/word_provider.dart';
+import 'package:memo_words/view/flash_card_create_page.dart';
 import 'package:memo_words/view/word_card_page.dart';
 import 'package:memo_words/view/word_create_page.dart';
 
@@ -78,7 +79,7 @@ class HomePage extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const WordCreatePage()),
+                          builder: (context) => const FlashCardCreatePage()),
                     );
                   },
                 ),

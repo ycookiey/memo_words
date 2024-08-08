@@ -15,9 +15,10 @@ class WordViewModel extends StateNotifier<List<Flashcard>> {
     state = flashcards;
   }
 
-  Future<void> addFlashcard(String name) async {
+  Future<Flashcard> addFlashcard(String name) async {
     Flashcard newFlashcard = await _wordRepository.addFlashcard(name);
     state = [...state, newFlashcard];
+    return newFlashcard;
   }
 
   Future<void> deleteFlashcard(String flashcardId) async {
