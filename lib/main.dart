@@ -6,6 +6,8 @@ import 'package:memo_words/view/login_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+final shuffledProvider = StateProvider<bool>((ref) => false);
+
 void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -31,7 +33,7 @@ class MyApp extends StatelessWidget {
             }
             if (snapshot.hasData) {
               // サインイン済 → ホーム画面へ
-              return const HomePage();
+              return const HomePage(false);
             }
             // 未サインイン → サインイン画面へ
             return LoginPage();

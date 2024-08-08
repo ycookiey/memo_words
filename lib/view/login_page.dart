@@ -37,7 +37,7 @@ class LoginPage extends ConsumerWidget {
                     .then((_) {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const HomePage()),
+                    MaterialPageRoute(builder: (context) => const HomePage(false)),
                   );
                 }).catchError((error) {
                   showDialog(

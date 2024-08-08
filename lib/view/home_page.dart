@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memo_words/main.dart';
 import 'package:memo_words/provider/word_provider.dart';
 import 'package:memo_words/view/word_card_page.dart';
 import 'package:memo_words/view/word_create_page.dart';
 
-final shuffledProvider = StateProvider<bool>((ref) => false);
-
 class HomePage extends ConsumerWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage(this.isShuffled, {super.key});
+  final bool isShuffled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

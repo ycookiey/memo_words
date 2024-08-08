@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:memo_words/main.dart';
 import 'package:memo_words/provider/word_provider.dart';
-import 'dart:math';
 
 final countProvider = StateProvider((ref) => 0);
 final reverseProvider = StateProvider((ref) => false);
-final shuffledProvider = StateProvider<bool>((ref) => false);
 final shuffledListProvider = StateProvider<List<int>>((ref) => []);
 
 class WordCardPage extends ConsumerWidget {
@@ -19,6 +18,8 @@ class WordCardPage extends ConsumerWidget {
     Future.microtask(() {
       if (isTrue == true) {
         isShuffled.state = true;
+      } else {
+        isShuffled.state = false;
       }
     });
 
@@ -74,6 +75,7 @@ class _BottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var isReverse = ref.watch(reverseProvider);
+    var isShuffled = ref.watch(shuffledProvider);
     return Container(
       height: double.infinity,
       decoration: const BoxDecoration(
@@ -101,6 +103,13 @@ class _BottomSheet extends ConsumerWidget {
             value: isReverse,
             onChanged: (value) {
               ref.read(reverseProvider.notifier).state = value;
+            },
+          ),
+          SwitchListTile(
+            title: const Text('単語シャッフル'),
+            value: isShuffled,
+            onChanged: (value) {
+              ref.read(shuffledProvider.notifier).state = value;
             },
           ),
         ],
@@ -132,7 +141,7 @@ class _FlipCardsState extends ConsumerState<FlipCards> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var words = ref.read(selectedFlashcardWordsProvider);
-      if (words.isNotEmpty && ref.read(shuffledListProvider).isEmpty) {
+      if (words.isNotEmpty) {
         var shuffledList = NumberShuffle().getShuffleList(words.length);
         ref.read(shuffledListProvider.notifier).state = shuffledList;
       }
@@ -218,7 +227,7 @@ class Buttons extends ConsumerWidget {
       if (cardNum < words.length - 1) {
         ref.read(countProvider.notifier).state++;
       } else {
-        _showCompletionDialog(context);
+        _showCompletionDialog(context, ref);
       }
     }
 
@@ -264,7 +273,7 @@ class Buttons extends ConsumerWidget {
     );
   }
 
-  void _showCompletionDialog(BuildContext context) {
+  void _showCompletionDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -274,6 +283,7 @@ class Buttons extends ConsumerWidget {
           TextButton(
             child: const Text('OK'),
             onPressed: () {
+              ref.read(countProvider.notifier).state = 0;
               Navigator.of(context).pop();
               Navigator.of(context).pop();
             },
