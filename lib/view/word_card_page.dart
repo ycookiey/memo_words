@@ -233,12 +233,20 @@ class Buttons extends ConsumerWidget {
               const SizedBox(height: 10),
               ElevatedButton(
                 child: const Text('×'),
-                onPressed: () {
+                onPressed: () async {
                   if (selectedFlashcardId != null) {
-                    ref.read(wordViewModelProvider.notifier).addMistakenDate(
-                          selectedFlashcardId,
-                          words[cardNum].id,
-                        );
+                    try {
+                      await ref
+                          .read(wordViewModelProvider.notifier)
+                          .addMistakenDate(
+                            selectedFlashcardId,
+                            words[cardNum].id,
+                          );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('エラーが発生しました: $e')),
+                      );
+                    }
                   }
                   nextWord();
                 },

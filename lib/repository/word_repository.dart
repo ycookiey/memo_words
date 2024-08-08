@@ -200,6 +200,9 @@ class WordRepository {
     }
     String userId = user.uid;
 
+    // クライアント側で現在の日時を生成
+    DateTime now = DateTime.now().toUtc();
+
     await firestore
         .collection('users')
         .doc(userId)
@@ -208,7 +211,7 @@ class WordRepository {
         .collection('words')
         .doc(wordId)
         .update({
-      'mistakenDates': FieldValue.arrayUnion([FieldValue.serverTimestamp()]),
+      'mistakenDates': FieldValue.arrayUnion([Timestamp.fromDate(now)]),
     });
   }
 }

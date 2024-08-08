@@ -78,22 +78,28 @@ class WordViewModel extends StateNotifier<List<Flashcard>> {
   }
 
   Future<void> addMistakenDate(String flashcardId, String wordId) async {
-    await _wordRepository.addMistakenDate(flashcardId, wordId);
-    state = state.map((flashcard) {
-      if (flashcard.id == flashcardId) {
-        return flashcard.copyWith(
-          words: flashcard.words.map((word) {
-            if (word.id == wordId) {
-              return word.copyWith(
-                mistakenDates: [...word.mistakenDates, DateTime.now()],
-              );
-            }
-            return word;
-          }).toList(),
-        );
-      }
-      return flashcard;
-    }).toList();
+    try {
+      DateTime now = DateTime.now().toUtc();
+      await _wordRepository.addMistakenDate(flashcardId, wordId);
+      state = state.map((flashcard) {
+        if (flashcard.id == flashcardId) {
+          return flashcard.copyWith(
+            words: flashcard.words.map((word) {
+              if (word.id == wordId) {
+                return word.copyWith(
+                  mistakenDates: [...word.mistakenDates, now],
+                );
+              }
+              return word;
+            }).toList(),
+          );
+        }
+        return flashcard;
+      }).toList();
+    } catch (e) {
+      print('Error in addMistakenDate: $e');
+      rethrow;
+    }
   }
 
   Flashcard? getFlashcardById(String flashcardId) {
