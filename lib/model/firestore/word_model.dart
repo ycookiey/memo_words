@@ -49,4 +49,8 @@ class Word {
       mistakenDates: mistakenDates ?? this.mistakenDates,
     );
   }
+
+  int getMistakeCount() {
+    return mistakenDates.length;
+  }
 }
