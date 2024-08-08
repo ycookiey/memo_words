@@ -22,8 +22,6 @@ class Flashcard {
 
   factory Flashcard.fromJson(Map<String, dynamic> json) {
     try {
-      print('Parsing Flashcard: $json');
-
       List<Word> parsedWords = [];
       if (json['words'] is List) {
         parsedWords = (json['words'] as List)
@@ -33,7 +31,6 @@ class Flashcard {
               } else if (wordData is Map<String, dynamic>) {
                 return Word.fromJson(wordData);
               } else {
-                print('Invalid word data: $wordData');
                 return null;
               }
             })
@@ -49,8 +46,6 @@ class Flashcard {
         updatedAt: (json['updatedAt'] as Timestamp).toDate(),
       );
     } catch (e, stackTrace) {
-      print('Error in Flashcard.fromJson: $e');
-      print('Stack trace: $stackTrace');
       rethrow;
     }
   }

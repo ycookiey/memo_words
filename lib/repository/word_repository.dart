@@ -21,29 +21,19 @@ class WordRepository {
       }
       String userId = user.uid;
 
-      print('Fetching flashcards for user: $userId'); // デバッグ用出力
-
       QuerySnapshot flashcardSnapshot = await firestore
           .collection('users')
           .doc(userId)
           .collection('flashcards')
           .get();
 
-      print('Flashcard documents: ${flashcardSnapshot.docs.length}'); // デバッグ用出力
-
       return Future.wait(flashcardSnapshot.docs.map((doc) async {
         try {
-          print('Processing flashcard document: ${doc.id}'); // デバッグ用出力
-
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
           data['id'] = doc.id;
 
-          // Fetch words for this flashcard
           QuerySnapshot wordSnapshot =
               await doc.reference.collection('words').get();
-
-          print(
-              'Words for flashcard ${doc.id}: ${wordSnapshot.docs.length}'); // デバッグ用出力
 
           List<Word> words = wordSnapshot.docs.map((wordDoc) {
             Map<String, dynamic> wordData =
@@ -54,18 +44,12 @@ class WordRepository {
 
           data['words'] = words;
 
-          print('Flashcard data: $data'); // デバッグ用出力
-
           return Flashcard.fromJson(data);
         } catch (e, stackTrace) {
-          print('Error processing flashcard ${doc.id}: $e');
-          print('Stack trace: $stackTrace');
           rethrow;
         }
       }).toList());
     } catch (e, stackTrace) {
-      print('Error in getFlashcards: $e');
-      print('Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -200,7 +184,6 @@ class WordRepository {
     }
     String userId = user.uid;
 
-    // クライアント側で現在の日時を生成
     DateTime now = DateTime.now().toUtc();
 
     await firestore
