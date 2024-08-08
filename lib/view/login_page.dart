@@ -28,8 +28,10 @@ class LoginPage extends ConsumerWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                final email = _emailController.text;
-                final password = _passwordController.text;
+                // final email = _emailController.text;
+                // final password = _passwordController.text;
+                final email = "test_user@test.test";
+                final password = "test_password";
 
                 ref
                     .read(authViewModelProvider.notifier)
