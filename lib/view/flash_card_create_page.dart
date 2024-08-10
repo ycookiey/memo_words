@@ -15,7 +15,13 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
   final flashcardNameController = TextEditingController();
   final _flashCardInputFormKey = GlobalKey<FormState>();
   final _wordInputFormKey = GlobalKey<FormState>();
-  List<WordPair> wordPairs = [WordPair()];
+  List<WordPair> wordPairs = [
+    WordPair(),
+    WordPair(),
+    WordPair(),
+    WordPair(),
+    WordPair(),
+  ];
 
   @override
   void dispose() {
