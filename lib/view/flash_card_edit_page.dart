@@ -4,14 +4,14 @@ import 'package:memo_words/model/firestore/flashcard_model.dart';
 import 'package:memo_words/model/firestore/word_model.dart';
 import 'package:memo_words/provider/word_provider.dart';
 
-class WordCreatePage extends ConsumerStatefulWidget {
-  const WordCreatePage({Key? key}) : super(key: key);
+class FlashCardEditPage extends ConsumerStatefulWidget {
+  const FlashCardEditPage({Key? key}) : super(key: key);
 
   @override
-  _WordCreatePageState createState() => _WordCreatePageState();
+  _FlashCardEditState createState() => _FlashCardEditState();
 }
 
-class _WordCreatePageState extends ConsumerState<WordCreatePage> {
+class _FlashCardEditState extends ConsumerState<FlashCardEditPage> {
   final wordController = TextEditingController();
   final meaningController = TextEditingController();
   final flashcardNameController = TextEditingController();

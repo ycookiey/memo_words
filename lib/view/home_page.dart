@@ -4,7 +4,7 @@ import 'package:memo_words/main.dart';
 import 'package:memo_words/provider/word_provider.dart';
 import 'package:memo_words/view/flash_card_create_page.dart';
 import 'package:memo_words/view/word_card_page.dart';
-import 'package:memo_words/view/word_create_page.dart';
+import 'package:memo_words/view/flash_card_edit_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage(this.isShuffled, {super.key});
@@ -44,7 +44,7 @@ class HomePage extends ConsumerWidget {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
-                                          const WordCreatePage()),
+                                          const FlashCardEditPage()),
                                 );
                               },
                             ),
