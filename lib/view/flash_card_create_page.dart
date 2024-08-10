@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memo_words/model/firestore/word_model.dart';
 import 'package:memo_words/provider/word_provider.dart';
@@ -12,9 +13,9 @@ class FlashCardCreatePage extends ConsumerStatefulWidget {
 
 class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
   final flashcardNameController = TextEditingController();
-  final wordController = TextEditingController();
-  final meaningController = TextEditingController();
-  List<Word> words = [];
+  final _flashCardInputFormKey = GlobalKey<FormState>();
+  final _wordInputFormKey = GlobalKey<FormState>();
+  List<WordPair> wordPairs = [WordPair()];
 
   @override
   Widget build(BuildContext context) {
@@ -22,101 +23,126 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
       appBar: AppBar(
         title: const Text('新しい単語帳を作成'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              TextField(
-                controller: flashcardNameController,
-                decoration: const InputDecoration(labelText: '単語帳名'),
-              ),
-              const SizedBox(height: 16),
-              _buildAddWordSection(),
-              const SizedBox(height: 16),
-              _buildWordList(),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _createFlashcard,
-                child: const Text('単語帳を作成'),
-              ),
-            ],
+      body: Form(
+        key: _flashCardInputFormKey,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                TextFormField(
+                  textInputAction: TextInputAction.next,
+                  controller: flashcardNameController,
+                  decoration: const InputDecoration(labelText: '単語帳名'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return '単語帳名を入力してください';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                Form(key: _wordInputFormKey, child: _buildWordInputList()),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _createFlashcard,
+                  child: const Text('単語帳を作成'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAddWordSection() {
+  Widget _buildWordInputList() {
     return Column(
+      children:
+          wordPairs.map((wordPair) => _buildWordInputRow(wordPair)).toList(),
+    );
+  }
+
+  Widget _buildWordInputRow(WordPair wordPair) {
+    return Row(
       children: [
-        TextField(
-          controller: wordController,
-          decoration: const InputDecoration(labelText: '単語'),
+        Expanded(
+          child: TextFormField(
+            textInputAction: TextInputAction.next,
+            controller: wordPair.wordController,
+            decoration: const InputDecoration(labelText: '単語'),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return '単語を入力してください';
+              }
+              return null;
+            },
+          ),
         ),
-        TextField(
-          controller: meaningController,
-          decoration: const InputDecoration(labelText: '意味'),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextFormField(
+            textInputAction: TextInputAction.next,
+            controller: wordPair.meaningController,
+            decoration: const InputDecoration(labelText: '意味'),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return '意味を入力してください';
+              }
+              return null;
+            },
+            onFieldSubmitted: (_) => _focusNextField(wordPair),
+          ),
         ),
-        ElevatedButton(
-          onPressed: _addWord,
-          child: const Icon(Icons.add),
+        IconButton(
+          icon: const Icon(Icons.remove),
+          onPressed: () => _removeWordPair(wordPair),
         ),
       ],
     );
   }
 
-  Widget _buildWordList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: words.length,
-      itemBuilder: (context, index) {
-        final word = words[index];
-        return ListTile(
-          title: Text(word.word),
-          subtitle: Text(word.meaning),
-          trailing: IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => _removeWord(index),
-          ),
-        );
-      },
-    );
-  }
-
-  void _addWord() {
-    final word = wordController.text;
-    final meaning = meaningController.text;
-    if (word.isNotEmpty && meaning.isNotEmpty) {
-      setState(() {
-        words.add(Word(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          word: word,
-          meaning: meaning,
-        ));
-      });
-      wordController.clear();
-      meaningController.clear();
+  void _focusNextField(WordPair currentPair) {
+    if (_wordInputFormKey.currentState!.validate()) {
+      int currentIndex = wordPairs.indexOf(currentPair);
+      if (currentIndex == wordPairs.length - 1) {
+        setState(() {
+          wordPairs.add(WordPair());
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          FocusScope.of(context).nextFocus();
+        });
+      }
     }
   }
 
-  void _removeWord(int index) {
+  void _removeWordPair(WordPair pair) {
     setState(() {
-      words.removeAt(index);
+      wordPairs.remove(pair);
+      if (wordPairs.isEmpty) {
+        wordPairs.add(WordPair());
+      }
     });
   }
 
   void _createFlashcard() async {
-    final name = flashcardNameController.text;
-    if (name.isNotEmpty && words.isNotEmpty) {
+    if (_flashCardInputFormKey.currentState!.validate()) {
+      final name = flashcardNameController.text;
+      final validWordPairs = wordPairs
+          .where((wp) =>
+              wp.wordController.text.isNotEmpty &&
+              wp.meaningController.text.isNotEmpty)
+          .toList();
+
       try {
         final flashcard =
             await ref.read(wordViewModelProvider.notifier).addFlashcard(name);
-        for (var word in words) {
-          await ref
-              .read(wordViewModelProvider.notifier)
-              .addWord(flashcard.id, word.word, word.meaning);
+        for (var wordPair in validWordPairs) {
+          await ref.read(wordViewModelProvider.notifier).addWord(
+                flashcard.id,
+                wordPair.wordController.text,
+                wordPair.meaningController.text,
+              );
         }
         Navigator.of(context).pop();
       } catch (e) {
@@ -124,10 +150,11 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
           SnackBar(content: Text('エラーが発生しました: $e')),
         );
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('単語帳名と少なくとも1つの単語を入力してください')),
-      );
     }
   }
+}
+
+class WordPair {
+  final TextEditingController wordController = TextEditingController();
+  final TextEditingController meaningController = TextEditingController();
 }
