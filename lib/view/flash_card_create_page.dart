@@ -18,6 +18,14 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
   List<WordPair> wordPairs = [WordPair()];
 
   @override
+  void dispose() {
+    for (var pair in wordPairs) {
+      pair.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -32,6 +40,7 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
               children: [
                 TextFormField(
                   textInputAction: TextInputAction.next,
+                  autofocus: true,
                   controller: flashcardNameController,
                   decoration: const InputDecoration(labelText: '単語帳名'),
                   validator: (value) {
@@ -68,6 +77,7 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
       children: [
         Expanded(
           child: TextFormField(
+            focusNode: wordPair.wordFocusNode,
             textInputAction: TextInputAction.next,
             controller: wordPair.wordController,
             decoration: const InputDecoration(labelText: '単語'),
@@ -77,11 +87,15 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
               }
               return null;
             },
+            onFieldSubmitted: (_) {
+              FocusScope.of(context).requestFocus(wordPair.meaningFocusNode);
+            },
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: TextFormField(
+            focusNode: wordPair.meaningFocusNode,
             textInputAction: TextInputAction.next,
             controller: wordPair.meaningController,
             decoration: const InputDecoration(labelText: '意味'),
@@ -103,15 +117,33 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
   }
 
   void _focusNextField(WordPair currentPair) {
-    if (_wordInputFormKey.currentState!.validate()) {
-      int currentIndex = wordPairs.indexOf(currentPair);
-      if (currentIndex == wordPairs.length - 1) {
+    int currentIndex = wordPairs.indexOf(currentPair);
+    if (currentIndex == wordPairs.length - 1) {
+      if (_wordInputFormKey.currentState!.validate()) {
         setState(() {
           wordPairs.add(WordPair());
         });
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          FocusScope.of(context).nextFocus();
+          FocusScope.of(context).requestFocus(wordPairs.last.wordFocusNode);
         });
+      } else {
+        _focusFirstErrorField();
+      }
+    } else {
+      FocusScope.of(context)
+          .requestFocus(wordPairs[currentIndex + 1].wordFocusNode);
+    }
+  }
+
+  void _focusFirstErrorField() {
+    for (var wordPair in wordPairs) {
+      if (wordPair.wordController.text.isEmpty) {
+        FocusScope.of(context).requestFocus(wordPair.wordFocusNode);
+        return;
+      }
+      if (wordPair.meaningController.text.isEmpty) {
+        FocusScope.of(context).requestFocus(wordPair.meaningFocusNode);
+        return;
       }
     }
   }
@@ -157,4 +189,13 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
 class WordPair {
   final TextEditingController wordController = TextEditingController();
   final TextEditingController meaningController = TextEditingController();
+  final FocusNode wordFocusNode = FocusNode();
+  final FocusNode meaningFocusNode = FocusNode();
+
+  void dispose() {
+    wordController.dispose();
+    meaningController.dispose();
+    wordFocusNode.dispose();
+    meaningFocusNode.dispose();
+  }
 }
