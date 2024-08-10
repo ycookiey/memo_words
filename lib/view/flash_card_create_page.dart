@@ -54,6 +54,9 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
                 Form(key: _wordInputFormKey, child: _buildWordInputList()),
                 const SizedBox(height: 16),
                 ElevatedButton(
+                    onPressed: _createNewWordPair, child: Icon(Icons.add)),
+                const SizedBox(height: 16),
+                ElevatedButton(
                   onPressed: _createFlashcard,
                   child: const Text('単語帳を作成'),
                 ),
@@ -119,19 +122,23 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
   void _focusNextField(WordPair currentPair) {
     int currentIndex = wordPairs.indexOf(currentPair);
     if (currentIndex == wordPairs.length - 1) {
-      if (_wordInputFormKey.currentState!.validate()) {
-        setState(() {
-          wordPairs.add(WordPair());
-        });
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          FocusScope.of(context).requestFocus(wordPairs.last.wordFocusNode);
-        });
-      } else {
-        _focusFirstErrorField();
-      }
+      _createNewWordPair();
     } else {
       FocusScope.of(context)
           .requestFocus(wordPairs[currentIndex + 1].wordFocusNode);
+    }
+  }
+
+  void _createNewWordPair() {
+    if (_wordInputFormKey.currentState!.validate()) {
+      setState(() {
+        wordPairs.add(WordPair());
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FocusScope.of(context).requestFocus(wordPairs.last.wordFocusNode);
+      });
+    } else {
+      _focusFirstErrorField();
     }
   }
 
