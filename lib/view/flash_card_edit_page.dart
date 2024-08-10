@@ -18,17 +18,42 @@ class _FlashCardEditState extends ConsumerState<FlashCardEditPage> {
   String? selectedFlashcardId;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final selectedId = ref.read(selectedFlashcardIdProvider);
+      if (selectedId != null) {
+        setState(() {
+          selectedFlashcardId = selectedId;
+        });
+        _updateFlashcardName();
+      }
+    });
+  }
+
+  void _updateFlashcardName() {
+    if (selectedFlashcardId != null) {
+      final flashcard = ref
+          .read(wordViewModelProvider.notifier)
+          .getFlashcardById(selectedFlashcardId!);
+      if (flashcard != null) {
+        flashcardNameController.text = flashcard.name;
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final flashcards = ref.watch(wordViewModelProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('単語帳管理'),
+        title: const Text('単語帳編集'),
       ),
       body: Column(
         children: [
           _buildFlashcardSelector(flashcards),
-          _buildAddFlashcardSection(),
+          _buildEditFlashcardSection(),
           if (selectedFlashcardId != null) ...[
             _buildAddWordSection(),
             _buildWordList(selectedFlashcardId!),
@@ -55,12 +80,13 @@ class _FlashCardEditState extends ConsumerState<FlashCardEditPage> {
           setState(() {
             selectedFlashcardId = newValue;
           });
+          _updateFlashcardName();
         },
       ),
     );
   }
 
-  Widget _buildAddFlashcardSection() {
+  Widget _buildEditFlashcardSection() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
@@ -68,18 +94,19 @@ class _FlashCardEditState extends ConsumerState<FlashCardEditPage> {
           Expanded(
             child: TextField(
               controller: flashcardNameController,
-              decoration: const InputDecoration(labelText: '新しい単語帳名'),
+              decoration: const InputDecoration(labelText: '単語帳名'),
             ),
           ),
           ElevatedButton(
             onPressed: () {
               final name = flashcardNameController.text;
-              if (name.isNotEmpty) {
-                ref.read(wordViewModelProvider.notifier).addFlashcard(name);
-                flashcardNameController.clear();
+              if (name.isNotEmpty && selectedFlashcardId != null) {
+                ref
+                    .read(wordViewModelProvider.notifier)
+                    .updateFlashcard(selectedFlashcardId!, name);
               }
             },
-            child: const Text('単語帳を追加'),
+            child: const Text('単語帳名を更新'),
           ),
         ],
       ),
