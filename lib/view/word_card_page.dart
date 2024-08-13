@@ -7,6 +7,7 @@ import 'package:memo_words/provider/word_provider.dart';
 final countProvider = StateProvider((ref) => 0);
 final reverseProvider = StateProvider((ref) => false);
 final shuffledListProvider = StateProvider<List<int>>((ref) => []);
+final progressProvider = StateProvider((ref) => 0.0);
 
 class WordCardPage extends ConsumerWidget {
   const WordCardPage({this.isTrue = false, super.key});
@@ -198,6 +199,7 @@ class Progress extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var cardNum = ref.watch(countProvider);
+    var progressValue = ref.watch(progressProvider);
     final words = ref.watch(selectedFlashcardWordsProvider);
     return Column(
       children: words.isEmpty
@@ -206,7 +208,7 @@ class Progress extends ConsumerWidget {
               Text('${cardNum + 1} / ${words.length}'),
               const SizedBox(height: 5),
               LinearProgressIndicator(
-                value: words.isEmpty ? 0 : (cardNum + 1) / words.length,
+                value: words.isEmpty ? 0 : progressValue,
                 backgroundColor: const Color(0xffcec5f0),
               ),
             ],
@@ -223,59 +225,71 @@ class Buttons extends ConsumerWidget {
     final words = ref.watch(selectedFlashcardWordsProvider);
     final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
 
-    void nextWord() {
-      if (cardNum < words.length - 1) {
-        ref.read(countProvider.notifier).state++;
-      } else {
+    Future<void> nextWord() async {
+      final currentCardNum = ref.read(countProvider); 
+      final wordsListLength = ref.read(selectedFlashcardWordsProvider).length;
+      if (currentCardNum < wordsListLength - 1) {
+        ref.watch(countProvider.notifier).update((state) => state + 1);
+        ref.watch(progressProvider.notifier).update((state) => state + 1 / wordsListLength);
+      } else if (currentCardNum == wordsListLength - 1) {
+        ref.watch(progressProvider.notifier).update((state) => state + 1 / wordsListLength);
         _showCompletionDialog(context, ref);
+      }
+    }
+
+    void previousWord() {
+      var cardNum = ref.watch(countProvider);
+      if (cardNum > 0) {
+        ref.read(countProvider.notifier).state--;
+        cardNum = ref.read(countProvider);
+        ref.read(progressProvider.notifier).state = cardNum / words.length;
       }
     }
 
     return Column(
       children: words.isEmpty
-          ? [const SizedBox()]
-          : [
-              ElevatedButton(
-                child: const Text('〇'),
-                onPressed: nextWord,
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                child: const Text('×'),
-                onPressed: () async {
-                  if (selectedFlashcardId != null) {
-                    try {
-                      await ref
-                          .read(wordViewModelProvider.notifier)
-                          .addMistakenDate(
-                            selectedFlashcardId,
-                            words[cardNum].id,
-                          );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('エラーが発生しました: $e')),
-                      );
-                    }
+        ? [const SizedBox()]
+        : [
+            ElevatedButton(
+              child: const Text('〇'),
+              onPressed: () {
+                nextWord();
+              },
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              child: const Text('×'),
+              onPressed: () async {
+                if (selectedFlashcardId != null) {
+                  try {
+                    await ref
+                        .read(wordViewModelProvider.notifier)
+                        .addMistakenDate(
+                          selectedFlashcardId,
+                          words[cardNum].id,
+                        );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('エラーが発生しました: $e')),
+                    );
                   }
-                  nextWord();
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                child: const Text('戻る'),
-                onPressed: () {
-                  if (cardNum > 0) {
-                    ref.read(countProvider.notifier).state--;
-                  }
-                },
-              ),
-            ],
+                }
+                nextWord();
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: previousWord,
+              child: const Text('戻る'),
+            ),
+          ],
     );
   }
 
   void _showCompletionDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('テスト完了'),
         content: const Text('すべての単語をテストしました。'),
@@ -283,6 +297,7 @@ class Buttons extends ConsumerWidget {
           TextButton(
             child: const Text('OK'),
             onPressed: () {
+              ref.read(progressProvider.notifier).state = 0.0;
               ref.read(countProvider.notifier).state = 0;
               Navigator.of(context).pop();
               Navigator.of(context).pop();
