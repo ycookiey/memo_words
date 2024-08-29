@@ -252,7 +252,27 @@ class Buttons extends ConsumerWidget {
         : [
             ElevatedButton(
               child: const Text('〇'),
-              onPressed: () {
+              onPressed: () async {
+                if (selectedFlashcardId != null) {
+                  try {
+                    await ref
+                      .read(wordViewModelProvider.notifier)
+                      .addCorrectAt(
+                        selectedFlashcardId,
+                        words[cardNum].id,
+                      );
+                    await ref
+                      .read(wordViewModelProvider.notifier)
+                      .toggleInProgress(
+                        selectedFlashcardId,
+                        words[cardNum].id,
+                      );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('エラーが発生しました: $e')),
+                    );
+                  }
+                }
                 nextWord();
               },
             ),
@@ -263,11 +283,17 @@ class Buttons extends ConsumerWidget {
                 if (selectedFlashcardId != null) {
                   try {
                     await ref
-                        .read(wordViewModelProvider.notifier)
-                        .addMistakenDate(
-                          selectedFlashcardId,
-                          words[cardNum].id,
-                        );
+                      .read(wordViewModelProvider.notifier)
+                      .addMistookAt(
+                        selectedFlashcardId,
+                        words[cardNum].id,
+                      );
+                    await ref
+                      .read(wordViewModelProvider.notifier)
+                      .toggleInProgress(
+                        selectedFlashcardId,
+                        words[cardNum].id,
+                      );
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('エラーが発生しました: $e')),
@@ -287,6 +313,7 @@ class Buttons extends ConsumerWidget {
   }
 
   void _showCompletionDialog(BuildContext context, WidgetRef ref) {
+    final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -296,7 +323,10 @@ class Buttons extends ConsumerWidget {
         actions: [
           TextButton(
             child: const Text('OK'),
-            onPressed: () {
+            onPressed: () async {
+              await ref
+                .read(wordViewModelProvider.notifier)
+                .resetInProgress(selectedFlashcardId);
               ref.read(progressProvider.notifier).state = 0.0;
               ref.read(countProvider.notifier).state = 0;
               Navigator.of(context).pop();

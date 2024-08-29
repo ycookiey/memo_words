@@ -9,15 +9,21 @@ class Word {
   final String word;
   final String meaning;
   final DateTime? addedOn;
-  final List<DateTime> mistakenDates;
+  final List<DateTime> correctAt;
+  final List<DateTime> mistookAt;
+  final bool inProgress;
 
   Word({
     required this.id,
     required this.word,
     required this.meaning,
     this.addedOn,
-    List<DateTime>? mistakenDates,
-  }) : this.mistakenDates = mistakenDates ?? [];
+    List<DateTime>? correctAt,
+    List<DateTime>? mistookAt,
+    bool? inProgress,
+  }) : this.correctAt = correctAt ?? [],
+      this.mistookAt = mistookAt ?? [],
+      this.inProgress = inProgress ?? true;
 
   factory Word.fromJson(Map<String, dynamic> json) {
     return Word(
@@ -25,10 +31,15 @@ class Word {
       word: json['word'] as String,
       meaning: json['meaning'] as String,
       addedOn: (json['addedOn'] as Timestamp?)?.toDate(),
-      mistakenDates: (json['mistakenDates'] as List<dynamic>?)
-              ?.map((e) => (e as Timestamp).toDate())
-              .toList() ??
-          [],
+      mistookAt: (json['mistakenDates'] as List<dynamic>?)
+          ?.map((e) => (e as Timestamp).toDate())
+          .toList() ??
+      [],
+      correctAt: (json['correctDates'] as List<dynamic>?)
+          ?.map((e) => (e as Timestamp).toDate())
+          .toList() ??
+      [],
+      inProgress: json['inProgress'] as bool? ?? true,
     );
   }
 
@@ -39,18 +50,26 @@ class Word {
     String? word,
     String? meaning,
     DateTime? addedOn,
-    List<DateTime>? mistakenDates,
+    List<DateTime>? correctAt,
+    List<DateTime>? mistookAt,
+    bool? inProgress,
   }) {
     return Word(
       id: id ?? this.id,
       word: word ?? this.word,
       meaning: meaning ?? this.meaning,
       addedOn: addedOn ?? this.addedOn,
-      mistakenDates: mistakenDates ?? this.mistakenDates,
+      correctAt: correctAt ?? this.correctAt,
+      mistookAt: mistookAt ?? this.mistookAt,
+      inProgress: inProgress ?? this.inProgress,
     );
   }
 
   int getMistakeCount() {
-    return mistakenDates.length;
+    return mistookAt.length;
+  }
+
+  int getCorrectCount() {
+    return correctAt.length;
   }
 }

@@ -130,7 +130,9 @@ class WordRepository {
       'word': englishWord,
       'meaning': japaneseMeaning,
       'addedOn': FieldValue.serverTimestamp(),
-      'mistakenDates': [],
+      'correctAt': [],
+      'mistookAt': [],
+      'inProgress': true,
     });
 
     DocumentSnapshot wordSnapshot = await wordRef.get();
@@ -177,7 +179,7 @@ class WordRepository {
         .delete();
   }
 
-  Future<void> addMistakenDate(String flashcardId, String wordId) async {
+  Future<void> addCorrectAt(String flashcardId, String wordId) async {
     User? user = firebaseAuth.currentUser;
     if (user == null) {
       throw Exception('No authenticated user found');
@@ -194,7 +196,82 @@ class WordRepository {
         .collection('words')
         .doc(wordId)
         .update({
-      'mistakenDates': FieldValue.arrayUnion([Timestamp.fromDate(now)]),
+      'correctAt': FieldValue.arrayUnion([Timestamp.fromDate(now)]),
+    });
+  }
+
+  Future<void> addMistookAt(String flashcardId, String wordId) async {
+    User? user = firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception('No authenticated user found');
+    }
+    String userId = user.uid;
+
+    DateTime now = DateTime.now().toUtc();
+
+    await firestore
+        .collection('users')
+        .doc(userId)
+        .collection('flashcards')
+        .doc(flashcardId)
+        .collection('words')
+        .doc(wordId)
+        .update({
+      'mistookAt': FieldValue.arrayUnion([Timestamp.fromDate(now)]),
+    });
+  }
+
+  Future<void> toggleInProgress(String flashcardId, String wordId) async {
+    User? user = firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception('No authenticated user found');
+    }
+    String userId = user.uid;
+
+    DocumentSnapshot wordSnapshot = await firestore
+        .collection('users')
+        .doc(userId)
+        .collection('flashcards')
+        .doc(flashcardId)
+        .collection('words')
+        .doc(wordId)
+        .get();
+
+    Map<String, dynamic> data = wordSnapshot.data() as Map<String, dynamic>;
+    bool inProgress = data['inProgress'];
+
+    await firestore
+        .collection('users')
+        .doc(userId)
+        .collection('flashcards')
+        .doc(flashcardId)
+        .collection('words')
+        .doc(wordId)
+        .update({
+      'inProgress': !inProgress,
+    });
+  }
+
+  Future<void> resetInProgress(String? flashcardId) async {
+    User? user = firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception('No authenticated user found');
+    }
+    String userId = user.uid;
+
+    await firestore
+      .collection('users')
+      .doc(userId)
+      .collection('flashcards')
+      .doc(flashcardId)
+      .collection('words')
+      .get()
+      .then((snapshot) {
+        snapshot.docs.forEach((doc) {
+          doc.reference.update({
+            'inProgress': true,
+          });
+        });
     });
   }
 }

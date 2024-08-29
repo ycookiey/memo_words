@@ -78,17 +78,17 @@ class WordViewModel extends StateNotifier<List<Flashcard>> {
     }).toList();
   }
 
-  Future<void> addMistakenDate(String flashcardId, String wordId) async {
+  Future<void> addCorrectAt(String flashcardId, String wordId) async {
     try {
       DateTime now = DateTime.now().toUtc();
-      await _wordRepository.addMistakenDate(flashcardId, wordId);
+      await _wordRepository.addCorrectAt(flashcardId, wordId);
       state = state.map((flashcard) {
         if (flashcard.id == flashcardId) {
           return flashcard.copyWith(
             words: flashcard.words.map((word) {
               if (word.id == wordId) {
                 return word.copyWith(
-                  mistakenDates: [...word.mistakenDates, now],
+                  correctAt: [...word.correctAt, now],
                 );
               }
               return word;
@@ -98,10 +98,76 @@ class WordViewModel extends StateNotifier<List<Flashcard>> {
         return flashcard;
       }).toList();
     } catch (e) {
-      print('Error in addMistakenDate: $e');
+      print('Error in addCorrectAt: $e');
       rethrow;
     }
   }
+
+  Future<void> addMistookAt(String flashcardId, String wordId) async {
+    try {
+      DateTime now = DateTime.now().toUtc();
+      await _wordRepository.addMistookAt(flashcardId, wordId);
+      state = state.map((flashcard) {
+        if (flashcard.id == flashcardId) {
+          return flashcard.copyWith(
+            words: flashcard.words.map((word) {
+              if (word.id == wordId) {
+                return word.copyWith(
+                  mistookAt: [...word.mistookAt, now],
+                );
+              }
+              return word;
+            }).toList(),
+          );
+        }
+        return flashcard;
+      }).toList();
+    } catch (e) {
+      print('Error in addMistookAt: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> toggleInProgress(String flashcardId, String wordId) async {
+    try {
+      await _wordRepository.toggleInProgress(flashcardId, wordId);
+      state = state.map((flashcard) {
+        if (flashcard.id == flashcardId) {
+          return flashcard.copyWith(
+            words: flashcard.words.map((word) {
+              if (word.id == wordId) {
+                return word.copyWith(inProgress: !word.inProgress);
+              }
+              return word;
+            }).toList(),
+          );
+        }
+        return flashcard;
+      }).toList();
+    } catch (e) {
+      print('Error in toggleInProgress: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> resetInProgress(String? flashcardId) async {
+    try {
+      await _wordRepository.resetInProgress(flashcardId);
+      state = state.map((flashcard) {
+        if (flashcard.id == flashcardId) {
+          return flashcard.copyWith(
+            words: flashcard.words.map((word) {
+              return word.copyWith(inProgress: true);
+            }).toList(),
+          );
+        }
+        return flashcard;
+      }).toList();
+    } catch (e) {
+      print('Error in resetInProgress: $e');
+      rethrow;
+    }
+  } 
 
   Flashcard? getFlashcardById(String flashcardId) {
     return state.firstWhere((flashcard) => flashcard.id == flashcardId);
