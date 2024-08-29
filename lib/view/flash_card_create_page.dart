@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:memo_words/model/firestore/word_model.dart';
 import 'package:memo_words/provider/word_provider.dart';
 
 class FlashCardCreatePage extends ConsumerStatefulWidget {
@@ -16,9 +14,6 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
   final _flashCardInputFormKey = GlobalKey<FormState>();
   final _wordInputFormKey = GlobalKey<FormState>();
   List<WordPair> wordPairs = [
-    WordPair(),
-    WordPair(),
-    WordPair(),
     WordPair(),
     WordPair(),
   ];
@@ -36,6 +31,10 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('新しい単語帳を作成'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _createFlashcard,
+        child: const Icon(Icons.check),
       ),
       body: Form(
         key: _flashCardInputFormKey,
@@ -62,10 +61,6 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
                 ElevatedButton(
                     onPressed: _createNewWordPair, child: Icon(Icons.add)),
                 const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _createFlashcard,
-                  child: const Text('単語帳を作成'),
-                ),
               ],
             ),
           ),
@@ -82,46 +77,51 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
   }
 
   Widget _buildWordInputRow(WordPair wordPair) {
-    return Row(
-      children: [
-        Expanded(
-          child: TextFormField(
-            focusNode: wordPair.wordFocusNode,
-            textInputAction: TextInputAction.next,
-            controller: wordPair.wordController,
-            decoration: const InputDecoration(labelText: '単語'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '単語を入力してください';
-              }
-              return null;
-            },
-            onFieldSubmitted: (_) {
-              FocusScope.of(context).requestFocus(wordPair.meaningFocusNode);
-            },
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextFormField(
+              focusNode: wordPair.wordFocusNode,
+              textInputAction: TextInputAction.next,
+              controller: wordPair.wordController,
+              decoration: const InputDecoration(
+                  labelText: '単語', labelStyle: TextStyle(fontSize: 12)),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '単語を入力してください';
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) {
+                FocusScope.of(context).requestFocus(wordPair.meaningFocusNode);
+              },
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: TextFormField(
-            focusNode: wordPair.meaningFocusNode,
-            textInputAction: TextInputAction.next,
-            controller: wordPair.meaningController,
-            decoration: const InputDecoration(labelText: '意味'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '意味を入力してください';
-              }
-              return null;
-            },
-            onFieldSubmitted: (_) => _focusNextField(wordPair),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextFormField(
+              focusNode: wordPair.meaningFocusNode,
+              textInputAction: TextInputAction.next,
+              controller: wordPair.meaningController,
+              decoration: const InputDecoration(
+                  labelText: '意味', labelStyle: TextStyle(fontSize: 12)),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '意味を入力してください';
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) => _focusNextField(wordPair),
+            ),
           ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.remove),
-          onPressed: () => _removeWordPair(wordPair),
-        ),
-      ],
+          IconButton(
+            icon: const Icon(Icons.remove),
+            onPressed: () => _removeWordPair(wordPair),
+          ),
+        ],
+      ),
     );
   }
 
