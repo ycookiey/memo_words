@@ -226,13 +226,17 @@ class Buttons extends ConsumerWidget {
     final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
 
     Future<void> nextWord() async {
-      final currentCardNum = ref.read(countProvider); 
+      final currentCardNum = ref.read(countProvider);
       final wordsListLength = ref.read(selectedFlashcardWordsProvider).length;
       if (currentCardNum < wordsListLength - 1) {
         ref.watch(countProvider.notifier).update((state) => state + 1);
-        ref.watch(progressProvider.notifier).update((state) => state + 1 / wordsListLength);
+        ref
+            .watch(progressProvider.notifier)
+            .update((state) => state + 1 / wordsListLength);
       } else if (currentCardNum == wordsListLength - 1) {
-        ref.watch(progressProvider.notifier).update((state) => state + 1 / wordsListLength);
+        ref
+            .watch(progressProvider.notifier)
+            .update((state) => state + 1 / wordsListLength);
         _showCompletionDialog(context, ref);
       }
     }
@@ -248,67 +252,78 @@ class Buttons extends ConsumerWidget {
 
     return Column(
       children: words.isEmpty
-        ? [const SizedBox()]
-        : [
-            ElevatedButton(
-              child: const Text('〇'),
-              onPressed: () async {
-                if (selectedFlashcardId != null) {
-                  try {
-                    await ref
-                      .read(wordViewModelProvider.notifier)
-                      .addCorrectAt(
-                        selectedFlashcardId,
-                        words[cardNum].id,
-                      );
-                    await ref
-                      .read(wordViewModelProvider.notifier)
-                      .toggleInProgress(
-                        selectedFlashcardId,
-                        words[cardNum].id,
-                      );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('エラーが発生しました: $e')),
-                    );
-                  }
-                }
-                nextWord();
-              },
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              child: const Text('×'),
-              onPressed: () async {
-                if (selectedFlashcardId != null) {
-                  try {
-                    await ref
-                      .read(wordViewModelProvider.notifier)
-                      .addMistookAt(
-                        selectedFlashcardId,
-                        words[cardNum].id,
-                      );
-                    await ref
-                      .read(wordViewModelProvider.notifier)
-                      .toggleInProgress(
-                        selectedFlashcardId,
-                        words[cardNum].id,
-                      );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('エラーが発生しました: $e')),
-                    );
-                  }
-                }
-                nextWord();
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: previousWord,
-              child: const Text('戻る'),
-            ),
-          ],
+          ? [const SizedBox()]
+          : [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.red,
+                    ),
+                    onPressed: () async {
+                      if (selectedFlashcardId != null) {
+                        try {
+                          await ref
+                              .read(wordViewModelProvider.notifier)
+                              .addMistookAt(
+                                selectedFlashcardId,
+                                words[cardNum].id,
+                              );
+                          await ref
+                              .read(wordViewModelProvider.notifier)
+                              .toggleInProgress(
+                                selectedFlashcardId,
+                                words[cardNum].id,
+                              );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('エラーが発生しました: $e')),
+                          );
+                        }
+                      }
+                      nextWord();
+                    },
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    child: Icon(
+                      Icons.circle_outlined,
+                      color: Colors.green,
+                    ),
+                    onPressed: () async {
+                      if (selectedFlashcardId != null) {
+                        try {
+                          await ref
+                              .read(wordViewModelProvider.notifier)
+                              .addCorrectAt(
+                                selectedFlashcardId,
+                                words[cardNum].id,
+                              );
+                          await ref
+                              .read(wordViewModelProvider.notifier)
+                              .toggleInProgress(
+                                selectedFlashcardId,
+                                words[cardNum].id,
+                              );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('エラーが発生しました: $e')),
+                          );
+                        }
+                      }
+                      nextWord();
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: previousWord,
+                child: Icon(Icons.undo),
+              ),
+            ],
     );
   }
 
@@ -325,8 +340,8 @@ class Buttons extends ConsumerWidget {
             child: const Text('OK'),
             onPressed: () async {
               await ref
-                .read(wordViewModelProvider.notifier)
-                .resetInProgress(selectedFlashcardId);
+                  .read(wordViewModelProvider.notifier)
+                  .resetInProgress(selectedFlashcardId);
               ref.read(progressProvider.notifier).state = 0.0;
               ref.read(countProvider.notifier).state = 0;
               Navigator.of(context).pop();
