@@ -10,20 +10,10 @@ final shuffledListProvider = StateProvider<List<int>>((ref) => []);
 final progressProvider = StateProvider((ref) => 0.0);
 
 class WordCardPage extends ConsumerWidget {
-  const WordCardPage({this.isTrue = false, super.key});
-  final bool isTrue;
+  const WordCardPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var isShuffled = ref.watch(shuffledProvider.notifier);
-    Future.microtask(() {
-      if (isTrue == true) {
-        isShuffled.state = true;
-      } else {
-        isShuffled.state = false;
-      }
-    });
-
     final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
     if (selectedFlashcardId == null) {
       return Scaffold(

@@ -57,8 +57,7 @@ class HomePage extends ConsumerWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) =>
-                                          WordCardPage(isTrue: isShuffled)),
+                                      builder: (context) => WordCardPage()),
                                 );
                               },
                             ),
