@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memo_words/main.dart';
 import 'package:memo_words/provider/word_provider.dart';
 
-final countProvider = StateProvider((ref) => 0);
+final cardNumProvider = StateProvider((ref) => 0);
 final reverseProvider = StateProvider((ref) => false);
 final shuffledListProvider = StateProvider<List<int>>((ref) => []);
 final progressProvider = StateProvider((ref) => 0.0);
@@ -142,7 +142,7 @@ class _FlipCardsState extends ConsumerState<FlipCards> {
   @override
   Widget build(BuildContext context) {
     var isReverse = ref.watch(reverseProvider);
-    var cardNum = ref.watch(countProvider);
+    var cardNum = ref.watch(cardNumProvider);
     var isShuffled = ref.watch(shuffledProvider);
     var shuffledCardNum = ref.watch(shuffledListProvider);
     final words = ref.watch(selectedFlashcardWordsProvider);
@@ -188,7 +188,7 @@ class Progress extends ConsumerWidget {
   const Progress({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var cardNum = ref.watch(countProvider);
+    var cardNum = ref.watch(cardNumProvider);
     var progressValue = ref.watch(progressProvider);
     final words = ref.watch(selectedFlashcardWordsProvider);
     return Column(
@@ -211,15 +211,15 @@ class Buttons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var cardNum = ref.watch(countProvider);
+    var cardNum = ref.watch(cardNumProvider);
     final words = ref.watch(selectedFlashcardWordsProvider);
     final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
 
     Future<void> nextWord() async {
-      final currentCardNum = ref.read(countProvider);
+      final currentCardNum = ref.read(cardNumProvider);
       final wordsListLength = ref.read(selectedFlashcardWordsProvider).length;
       if (currentCardNum < wordsListLength - 1) {
-        ref.watch(countProvider.notifier).update((state) => state + 1);
+        ref.watch(cardNumProvider.notifier).update((state) => state + 1);
         ref
             .watch(progressProvider.notifier)
             .update((state) => state + 1 / wordsListLength);
@@ -232,10 +232,10 @@ class Buttons extends ConsumerWidget {
     }
 
     void previousWord() {
-      var cardNum = ref.watch(countProvider);
+      var cardNum = ref.watch(cardNumProvider);
       if (cardNum > 0) {
-        ref.read(countProvider.notifier).state--;
-        cardNum = ref.read(countProvider);
+        ref.read(cardNumProvider.notifier).state--;
+        cardNum = ref.read(cardNumProvider);
         ref.read(progressProvider.notifier).state = cardNum / words.length;
       }
     }
@@ -333,7 +333,7 @@ class Buttons extends ConsumerWidget {
                   .read(wordViewModelProvider.notifier)
                   .resetInProgress(selectedFlashcardId);
               ref.read(progressProvider.notifier).state = 0.0;
-              ref.read(countProvider.notifier).state = 0;
+              ref.read(cardNumProvider.notifier).state = 0;
               Navigator.of(context).pop();
               Navigator.of(context).pop();
             },
