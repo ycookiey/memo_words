@@ -310,7 +310,7 @@ class Buttons extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: previousWord,
+                onPressed: cardNum != 0 ? previousWord : null,
                 child: Icon(Icons.undo),
               ),
             ],
