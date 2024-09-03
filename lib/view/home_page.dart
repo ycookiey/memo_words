@@ -17,6 +17,7 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('単語帳アプリ'),
       ),
       body: Column(
