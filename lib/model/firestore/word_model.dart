@@ -21,9 +21,9 @@ class Word {
     List<DateTime>? correctAt,
     List<DateTime>? mistookAt,
     bool? inProgress,
-  }) : this.correctAt = correctAt ?? [],
-      this.mistookAt = mistookAt ?? [],
-      this.inProgress = inProgress ?? true;
+  })  : this.correctAt = correctAt ?? [],
+        this.mistookAt = mistookAt ?? [],
+        this.inProgress = inProgress ?? true;
 
   factory Word.fromJson(Map<String, dynamic> json) {
     return Word(
@@ -32,13 +32,13 @@ class Word {
       meaning: json['meaning'] as String,
       addedOn: (json['addedOn'] as Timestamp?)?.toDate(),
       mistookAt: (json['mistakenDates'] as List<dynamic>?)
-          ?.map((e) => (e as Timestamp).toDate())
-          .toList() ??
-      [],
+              ?.map((e) => (e as Timestamp).toDate())
+              .toList() ??
+          [],
       correctAt: (json['correctDates'] as List<dynamic>?)
-          ?.map((e) => (e as Timestamp).toDate())
-          .toList() ??
-      [],
+              ?.map((e) => (e as Timestamp).toDate())
+              .toList() ??
+          [],
       inProgress: json['inProgress'] as bool? ?? true,
     );
   }

@@ -167,7 +167,27 @@ class WordViewModel extends StateNotifier<List<Flashcard>> {
       print('Error in resetInProgress: $e');
       rethrow;
     }
-  } 
+  }
+
+  Future<List<Word>> getKnownWords(String flashcardId) async {
+    try {
+      Flashcard? flashcard = getFlashcardById(flashcardId);
+      return await flashcard?.getKnownWords() ?? [];
+    } catch (e) {
+      print('Error in getKnownWords: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Word>> getUnknownWords(String flashcardId) async {
+    try {
+      Flashcard? flashcard = getFlashcardById(flashcardId);
+      return await flashcard?.getUnknownWords() ?? [];
+    } catch (e) {
+      print('Error in getUnknownWords: $e');
+      rethrow;
+    }
+  }
 
   Flashcard? getFlashcardById(String flashcardId) {
     return state.firstWhere((flashcard) => flashcard.id == flashcardId);

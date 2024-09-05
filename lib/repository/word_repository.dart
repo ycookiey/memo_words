@@ -196,7 +196,7 @@ class WordRepository {
         .collection('words')
         .doc(wordId)
         .update({
-      'correctAt': FieldValue.arrayUnion([Timestamp.fromDate(now)]),
+      'correctAt': FieldValue.arrayUnion([now]),
     });
   }
 
@@ -217,7 +217,7 @@ class WordRepository {
         .collection('words')
         .doc(wordId)
         .update({
-      'mistookAt': FieldValue.arrayUnion([Timestamp.fromDate(now)]),
+      'mistookAt': FieldValue.arrayUnion([now]),
     });
   }
 
