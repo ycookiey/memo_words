@@ -179,6 +179,18 @@ class WordRepository {
         .delete();
   }
 
+  Future<List<Word>> getKnownWords(String flashcardId) async {
+    List<Flashcard> flashcards = await getFlashcards();
+    Flashcard flashcardData = flashcards.firstWhere((flashcard) => flashcard.id == flashcardId);
+    return flashcardData.knownWords; 
+  }
+
+  Future<List<Word>> getUnknownWords(String flashcardId) async {
+    List<Flashcard> flashcards = await getFlashcards();
+    Flashcard flashcardData = flashcards.firstWhere((flashcard) => flashcard.id == flashcardId);
+    return flashcardData.unknownWords; 
+  }
+
   Future<void> addCorrectAt(String flashcardId, String wordId) async {
     User? user = firebaseAuth.currentUser;
     if (user == null) {

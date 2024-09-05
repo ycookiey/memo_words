@@ -13,13 +13,13 @@ Word _$WordFromJson(Map<String, dynamic> json) => Word(
       addedOn: json['addedOn'] == null
           ? null
           : DateTime.parse(json['addedOn'] as String),
-      correctAt: (json['correctAt'] as List<dynamic>?)
-          ?.map((e) => DateTime.parse(e as String))
+      correctAt: (json['correctAt'] as List<dynamic>)
+          .map((e) => DateTime.parse(e as String))
           .toList(),
-      mistookAt: (json['mistookAt'] as List<dynamic>?)
-          ?.map((e) => DateTime.parse(e as String))
+      mistookAt: (json['mistookAt'] as List<dynamic>)
+          .map((e) => DateTime.parse(e as String))
           .toList(),
-      inProgress: json['inProgress'] as bool?,
+      inProgress: json['inProgress'] as bool,
     );
 
 Map<String, dynamic> _$WordToJson(Word instance) => <String, dynamic>{

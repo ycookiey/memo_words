@@ -78,6 +78,24 @@ class WordViewModel extends StateNotifier<List<Flashcard>> {
     }).toList();
   }
 
+    Future<List<Word>> getKnownWords(String flashcardId) async {
+    try {
+      return await _wordRepository.getKnownWords(flashcardId);
+    } catch (e) {
+      print('Error in getKnownWords: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Word>> getUnknownWords(String flashcardId) async {
+    try {
+      return await _wordRepository.getUnknownWords(flashcardId);
+    } catch (e) {
+      print('Error in getUnknownWords: $e');
+      rethrow;
+    }
+  }
+
   Future<void> addCorrectAt(String flashcardId, String wordId) async {
     try {
       DateTime now = DateTime.now().toUtc();
@@ -165,26 +183,6 @@ class WordViewModel extends StateNotifier<List<Flashcard>> {
       }).toList();
     } catch (e) {
       print('Error in resetInProgress: $e');
-      rethrow;
-    }
-  }
-
-  Future<List<Word>> getKnownWords(String flashcardId) async {
-    try {
-      Flashcard? flashcard = getFlashcardById(flashcardId);
-      return await flashcard?.getKnownWords() ?? [];
-    } catch (e) {
-      print('Error in getKnownWords: $e');
-      rethrow;
-    }
-  }
-
-  Future<List<Word>> getUnknownWords(String flashcardId) async {
-    try {
-      Flashcard? flashcard = getFlashcardById(flashcardId);
-      return await flashcard?.getUnknownWords() ?? [];
-    } catch (e) {
-      print('Error in getUnknownWords: $e');
       rethrow;
     }
   }

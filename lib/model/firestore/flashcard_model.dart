@@ -68,31 +68,23 @@ class Flashcard {
     );
   }
 
-  Future<List<Word>> fetchWords() async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    return words;
-  }
-
-  Future<List<Word>> getKnownWords() async {
-    List<Word> words = await fetchWords();
+  List<Word> get knownWords {
     return words.where((word) => compareCorrectAndMistook(word) > 0).toList();
   }
 
-  Future<List<Word>> getUnknownWords() async {
-    List<Word> words = await fetchWords();
+  List<Word> get unknownWords {
     return words.where((word) => compareCorrectAndMistook(word) < 0).toList();
   }
 
   int compareCorrectAndMistook(Word word) {
     if (word.correctAt.isEmpty) {
       // unknownWordsに入れる
-      return -1;
+      return word.mistookAt.isEmpty ? 0 : -1;
     } else if (word.mistookAt.isEmpty) {
       // knownWordsに入れる
       return 1;
     } else {
-      return word.correctAt[word.correctAt.length - 1]
-          .compareTo(word.mistookAt[word.mistookAt.length - 1]);
+      return word.correctAt.last.compareTo(word.mistookAt.last);
     }
   }
 }
