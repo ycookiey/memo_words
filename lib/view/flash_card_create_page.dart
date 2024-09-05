@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memo_words/provider/word_provider.dart';
+import 'package:memo_words/widgets/word_input_field.dart';
 
 class FlashCardCreatePage extends ConsumerStatefulWidget {
   const FlashCardCreatePage({Key? key}) : super(key: key);
@@ -59,7 +60,9 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
                 Form(key: _wordInputFormKey, child: _buildWordInputList()),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                    onPressed: _createNewWordPair, child: Icon(Icons.add)),
+                  onPressed: _createNewWordPair,
+                  child: const Icon(Icons.add),
+                ),
                 const SizedBox(height: 16),
               ],
             ),
@@ -71,57 +74,16 @@ class _FlashCardCreatePageState extends ConsumerState<FlashCardCreatePage> {
 
   Widget _buildWordInputList() {
     return Column(
-      children:
-          wordPairs.map((wordPair) => _buildWordInputRow(wordPair)).toList(),
-    );
-  }
-
-  Widget _buildWordInputRow(WordPair wordPair) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextFormField(
-              focusNode: wordPair.wordFocusNode,
-              textInputAction: TextInputAction.next,
-              controller: wordPair.wordController,
-              decoration: const InputDecoration(
-                  labelText: '単語', labelStyle: TextStyle(fontSize: 12)),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return '単語を入力してください';
-                }
-                return null;
-              },
-              onFieldSubmitted: (_) {
-                FocusScope.of(context).requestFocus(wordPair.meaningFocusNode);
-              },
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextFormField(
-              focusNode: wordPair.meaningFocusNode,
-              textInputAction: TextInputAction.next,
-              controller: wordPair.meaningController,
-              decoration: const InputDecoration(
-                  labelText: '意味', labelStyle: TextStyle(fontSize: 12)),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return '意味を入力してください';
-                }
-                return null;
-              },
-              onFieldSubmitted: (_) => _focusNextField(wordPair),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.remove),
-            onPressed: () => _removeWordPair(wordPair),
-          ),
-        ],
-      ),
+      children: wordPairs
+          .map((wordPair) => WordInputField(
+                wordController: wordPair.wordController,
+                meaningController: wordPair.meaningController,
+                wordFocusNode: wordPair.wordFocusNode,
+                meaningFocusNode: wordPair.meaningFocusNode,
+                onRemove: () => _removeWordPair(wordPair),
+                onNextField: () => _focusNextField(wordPair),
+              ))
+          .toList(),
     );
   }
 
