@@ -231,13 +231,18 @@ class Buttons extends ConsumerWidget {
       }
     }
 
-    void previousWord() {
+    void previousWord() async {
       var cardNum = ref.watch(cardNumProvider);
+      final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider) ?? '';
       if (cardNum > 0) {
         ref.read(cardNumProvider.notifier).state--;
         cardNum = ref.read(cardNumProvider);
         ref.read(progressProvider.notifier).state = cardNum / words.length;
       }
+      await ref.read(wordViewModelProvider.notifier).toggleInProgress(
+            selectedFlashcardId,
+            words[cardNum].id,
+          );
     }
 
     return Column(
