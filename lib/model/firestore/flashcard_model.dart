@@ -87,4 +87,14 @@ class Flashcard {
       return word.correctAt.last.compareTo(word.mistookAt.last);
     }
   }
+
+  int get finishedWordCount {
+    int falseInProgressCount = 0;
+    for (Word word in words) {
+      if (word.inProgress == false) {
+        falseInProgressCount++;
+      }
+    }
+    return falseInProgressCount;
+  }
 }

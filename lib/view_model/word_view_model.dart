@@ -78,7 +78,7 @@ class WordViewModel extends StateNotifier<List<Flashcard>> {
     }).toList();
   }
 
-    Future<List<Word>> getKnownWords(String flashcardId) async {
+  Future<List<Word>> getKnownWords(String flashcardId) async {
     try {
       return await _wordRepository.getKnownWords(flashcardId);
     } catch (e) {
@@ -183,6 +183,15 @@ class WordViewModel extends StateNotifier<List<Flashcard>> {
       }).toList();
     } catch (e) {
       print('Error in resetInProgress: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> getFinishedWordCount(String flashcardId) async {
+    try {
+      await _wordRepository.getFinishedWordCount(flashcardId);
+    } catch (e) {
+      print('Error in getFinishedWordCount: $e');
       rethrow;
     }
   }

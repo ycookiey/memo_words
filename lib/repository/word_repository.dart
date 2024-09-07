@@ -181,14 +181,16 @@ class WordRepository {
 
   Future<List<Word>> getKnownWords(String flashcardId) async {
     List<Flashcard> flashcards = await getFlashcards();
-    Flashcard flashcardData = flashcards.firstWhere((flashcard) => flashcard.id == flashcardId);
-    return flashcardData.knownWords; 
+    Flashcard flashcardData =
+        flashcards.firstWhere((flashcard) => flashcard.id == flashcardId);
+    return flashcardData.knownWords;
   }
 
   Future<List<Word>> getUnknownWords(String flashcardId) async {
     List<Flashcard> flashcards = await getFlashcards();
-    Flashcard flashcardData = flashcards.firstWhere((flashcard) => flashcard.id == flashcardId);
-    return flashcardData.unknownWords; 
+    Flashcard flashcardData =
+        flashcards.firstWhere((flashcard) => flashcard.id == flashcardId);
+    return flashcardData.unknownWords;
   }
 
   Future<void> addCorrectAt(String flashcardId, String wordId) async {
@@ -272,18 +274,25 @@ class WordRepository {
     String userId = user.uid;
 
     await firestore
-      .collection('users')
-      .doc(userId)
-      .collection('flashcards')
-      .doc(flashcardId)
-      .collection('words')
-      .get()
-      .then((snapshot) {
-        snapshot.docs.forEach((doc) {
-          doc.reference.update({
-            'inProgress': true,
-          });
+        .collection('users')
+        .doc(userId)
+        .collection('flashcards')
+        .doc(flashcardId)
+        .collection('words')
+        .get()
+        .then((snapshot) {
+      snapshot.docs.forEach((doc) {
+        doc.reference.update({
+          'inProgress': true,
         });
+      });
     });
+  }
+
+  Future<int> getFinishedWordCount(String flashcardId) async {
+    List<Flashcard> flashcards = await getFlashcards();
+    Flashcard flashcardData =
+        flashcards.firstWhere((flashcard) => flashcard.id == flashcardId);
+    return flashcardData.finishedWordCount;
   }
 }
