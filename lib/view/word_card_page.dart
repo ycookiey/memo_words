@@ -215,15 +215,28 @@ class Buttons extends ConsumerWidget {
     final words = ref.watch(selectedFlashcardWordsProvider);
     final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
 
-    Future<void> nextWord() async {
-      final currentCardNum = ref.read(cardNumProvider);
-      final wordsListLength = ref.read(selectedFlashcardWordsProvider).length;
-      if (currentCardNum < wordsListLength - 1) {
+    void nextWord() async {
+      final wordsListLength = words.length;
+      if (selectedFlashcardId != null) {
+        try {
+          await ref
+              .read(wordViewModelProvider.notifier)
+              .toggleInProgress(
+                selectedFlashcardId,
+                words[cardNum].id,
+              );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('エラーが発生しました: $e')),
+          );
+        }
+      }
+      if (cardNum < wordsListLength - 1) {
         ref.watch(cardNumProvider.notifier).update((state) => state + 1);
         ref
             .watch(progressProvider.notifier)
             .update((state) => state + 1 / wordsListLength);
-      } else if (currentCardNum == wordsListLength - 1) {
+      } else if (cardNum == wordsListLength - 1) {
         ref
             .watch(progressProvider.notifier)
             .update((state) => state + 1 / wordsListLength);
@@ -231,18 +244,54 @@ class Buttons extends ConsumerWidget {
       }
     }
 
-    void previousWord() async {
-      var cardNum = ref.watch(cardNumProvider);
-      final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider) ?? '';
+    void correctNextWord() async {
+      if (selectedFlashcardId != null) {
+        try {
+          await ref
+              .read(wordViewModelProvider.notifier)
+              .addCorrectAt(
+                selectedFlashcardId,
+                words[cardNum].id,
+              );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('エラーが発生しました: $e')),
+          );
+        }
+      }
+      nextWord();
+    }
+
+    void mistakeNextWord() async {
+      if (selectedFlashcardId != null) {
+        try {
+          await ref
+              .read(wordViewModelProvider.notifier)
+              .addMistookAt(
+                selectedFlashcardId,
+                words[cardNum].id,
+              );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('エラーが発生しました: $e')),
+          );
+        }
+      }
+      nextWord();
+    }
+
+    Future<void> previousWord() async {
       if (cardNum > 0) {
         ref.read(cardNumProvider.notifier).state--;
         cardNum = ref.read(cardNumProvider);
         ref.read(progressProvider.notifier).state = cardNum / words.length;
       }
-      await ref.read(wordViewModelProvider.notifier).toggleInProgress(
-            selectedFlashcardId,
-            words[cardNum].id,
-          );
+      if (selectedFlashcardId != null) {
+        await ref.read(wordViewModelProvider.notifier).toggleInProgress(
+              selectedFlashcardId,
+              words[cardNum].id,
+            );
+      }
     }
 
     return Column(
@@ -257,58 +306,18 @@ class Buttons extends ConsumerWidget {
                       Icons.close,
                       color: Colors.red,
                     ),
-                    onPressed: () async {
-                      if (selectedFlashcardId != null) {
-                        try {
-                          await ref
-                              .read(wordViewModelProvider.notifier)
-                              .addMistookAt(
-                                selectedFlashcardId,
-                                words[cardNum].id,
-                              );
-                          await ref
-                              .read(wordViewModelProvider.notifier)
-                              .toggleInProgress(
-                                selectedFlashcardId,
-                                words[cardNum].id,
-                              );
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('エラーが発生しました: $e')),
-                          );
-                        }
-                      }
-                      nextWord();
+                    onPressed: () {
+                      mistakeNextWord();
                     },
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
-                    child: Icon(
+                    child: const Icon(
                       Icons.circle_outlined,
                       color: Colors.green,
                     ),
-                    onPressed: () async {
-                      if (selectedFlashcardId != null) {
-                        try {
-                          await ref
-                              .read(wordViewModelProvider.notifier)
-                              .addCorrectAt(
-                                selectedFlashcardId,
-                                words[cardNum].id,
-                              );
-                          await ref
-                              .read(wordViewModelProvider.notifier)
-                              .toggleInProgress(
-                                selectedFlashcardId,
-                                words[cardNum].id,
-                              );
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('エラーが発生しました: $e')),
-                          );
-                        }
-                      }
-                      nextWord();
+                    onPressed: () {
+                      correctNextWord();
                     },
                   ),
                 ],
