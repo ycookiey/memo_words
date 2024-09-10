@@ -29,6 +29,7 @@ class _WordInputFieldState extends State<WordInputField> {
   List<String> _suggestions = [];
   Timer? _debounce;
   bool _isInternalChange = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _WordInputFieldState extends State<WordInputField> {
   void dispose() {
     widget.wordController.removeListener(_onWordChanged);
     _debounce?.cancel();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -82,6 +84,7 @@ class _WordInputFieldState extends State<WordInputField> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Column(
@@ -107,16 +110,24 @@ class _WordInputFieldState extends State<WordInputField> {
                   },
                 ),
                 if (_suggestions.isNotEmpty)
-                  Wrap(
-                    spacing: 8,
-                    children: _suggestions
-                        .map((suggestion) => GestureDetector(
-                              onTap: () => _selectSuggestion(suggestion),
-                              child: Chip(
-                                label: Text(suggestion),
-                              ),
-                            ))
-                        .toList(),
+                  SizedBox(
+                    height: 40,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      controller: _scrollController,
+                      itemCount: _suggestions.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: ChoiceChip(
+                            label: Text(_suggestions[index]),
+                            selected: false,
+                            onSelected: (_) =>
+                                _selectSuggestion(_suggestions[index]),
+                          ),
+                        );
+                      },
+                    ),
                   ),
               ],
             ),
