@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -206,6 +207,40 @@ class Progress extends ConsumerWidget {
   }
 }
 
+class WaitableElevatedButton extends StatefulWidget {
+
+  WaitableElevatedButton({
+    required this.onPressed,
+    required this.child,
+    super.key,
+  });
+  @override
+  createState() => _WaitableElevatedButtonState();
+
+  final AsyncCallback onPressed;
+  final Widget child;
+}
+
+class _WaitableElevatedButtonState extends State<WaitableElevatedButton> {
+  bool _waiting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: _waiting 
+        ? null 
+        : () async {
+          setState(() => _waiting = true);
+          await widget.onPressed();
+          Future.delayed(const Duration(milliseconds: 50), () {
+            setState(() => _waiting = false);
+          });
+        },
+      child: widget.child,
+    );
+  }
+}
+
 class Buttons extends ConsumerWidget {
   const Buttons({super.key});
 
@@ -213,10 +248,10 @@ class Buttons extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var cardNum = ref.watch(cardNumProvider);
     final words = ref.watch(selectedFlashcardWordsProvider);
+    final wordsListLength = words.length;
     final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
 
-    void nextWord() async {
-      final wordsListLength = words.length;
+    Future<void> nextWord() async {
       if (selectedFlashcardId != null) {
         try {
           await ref
@@ -236,15 +271,15 @@ class Buttons extends ConsumerWidget {
         ref
             .watch(progressProvider.notifier)
             .update((state) => state + 1 / wordsListLength);
-      } else if (cardNum == wordsListLength - 1) {
+      } else if (cardNum >= wordsListLength - 1) {
+        _showCompletionDialog(context, ref);
         ref
             .watch(progressProvider.notifier)
             .update((state) => state + 1 / wordsListLength);
-        _showCompletionDialog(context, ref);
       }
     }
 
-    void correctNextWord() async {
+    Future<void> correctNextWord() async {
       if (selectedFlashcardId != null) {
         try {
           await ref
@@ -262,7 +297,7 @@ class Buttons extends ConsumerWidget {
       nextWord();
     }
 
-    void mistakeNextWord() async {
+    Future<void> mistakeNextWord() async {
       if (selectedFlashcardId != null) {
         try {
           await ref
@@ -285,12 +320,17 @@ class Buttons extends ConsumerWidget {
         ref.read(cardNumProvider.notifier).state--;
         cardNum = ref.read(cardNumProvider);
         ref.read(progressProvider.notifier).state = cardNum / words.length;
+      } else {
+        ref.read(cardNumProvider.notifier).state = 0;
+        ref.read(progressProvider.notifier).state = 0.0;
       }
       if (selectedFlashcardId != null) {
         await ref.read(wordViewModelProvider.notifier).toggleInProgress(
               selectedFlashcardId,
               words[cardNum].id,
             );
+      } else {
+        return;
       }
     }
 
@@ -301,30 +341,34 @@ class Buttons extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
+                  WaitableElevatedButton(
                     child: const Icon(
                       Icons.close,
                       color: Colors.red,
                     ),
-                    onPressed: () {
-                      mistakeNextWord();
+                    onPressed: () async {
+                      await mistakeNextWord();
                     },
                   ),
                   const SizedBox(width: 10),
-                  ElevatedButton(
+                  WaitableElevatedButton(
                     child: const Icon(
                       Icons.circle_outlined,
                       color: Colors.green,
                     ),
-                    onPressed: () {
-                      correctNextWord();
+                    onPressed: () async {
+                      await correctNextWord();
                     },
                   ),
                 ],
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: cardNum != 0 ? previousWord : null,
+              WaitableElevatedButton(
+                onPressed: () async {
+                  if (cardNum != 0) {
+                    await previousWord();
+                  }
+                },
                 child: Icon(Icons.undo),
               ),
             ],
