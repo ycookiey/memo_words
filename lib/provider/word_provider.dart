@@ -36,3 +36,8 @@ final selectedFlashcardWordsProvider = Provider<List<Word>>((ref) {
 
   return selectedFlashcard.words;
 });
+
+final finishedWordCountProvider = Provider<int>((ref) {
+  final words = ref.watch(selectedFlashcardWordsProvider);
+  return words.where((word) => word.inProgress == false).length;
+});

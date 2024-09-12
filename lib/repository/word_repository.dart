@@ -288,11 +288,4 @@ class WordRepository {
       });
     });
   }
-
-  Future<int> getFinishedWordCount(String flashcardId) async {
-    List<Flashcard> flashcards = await getFlashcards();
-    Flashcard flashcardData =
-        flashcards.firstWhere((flashcard) => flashcard.id == flashcardId);
-    return flashcardData.finishedWordCount;
-  }
 }

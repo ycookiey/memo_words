@@ -8,7 +8,6 @@ import 'package:memo_words/provider/word_provider.dart';
 final cardNumProvider = StateProvider((ref) => 0);
 final reverseProvider = StateProvider((ref) => false);
 final shuffledListProvider = StateProvider<List<int>>((ref) => []);
-final progressProvider = StateProvider((ref) => 0.0);
 
 class WordCardPage extends ConsumerWidget {
   const WordCardPage({super.key});
@@ -190,8 +189,13 @@ class Progress extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var cardNum = ref.watch(cardNumProvider);
-    var progressValue = ref.watch(progressProvider);
     final words = ref.watch(selectedFlashcardWordsProvider);
+    final finishedWordCount = ref.watch(finishedWordCountProvider);
+    double progressValue = 0.0;
+    if (words.isNotEmpty) {
+      progressValue = finishedWordCount / words.length;
+    }
+
     return Column(
       children: words.isEmpty
           ? [const SizedBox()]
@@ -268,14 +272,8 @@ class Buttons extends ConsumerWidget {
       }
       if (cardNum < wordsListLength - 1) {
         ref.watch(cardNumProvider.notifier).update((state) => state + 1);
-        ref
-            .watch(progressProvider.notifier)
-            .update((state) => state + 1 / wordsListLength);
       } else if (cardNum >= wordsListLength - 1) {
         _showCompletionDialog(context, ref);
-        ref
-            .watch(progressProvider.notifier)
-            .update((state) => state + 1 / wordsListLength);
       }
     }
 
@@ -318,11 +316,8 @@ class Buttons extends ConsumerWidget {
     Future<void> previousWord() async {
       if (cardNum > 0) {
         ref.read(cardNumProvider.notifier).state--;
-        cardNum = ref.read(cardNumProvider);
-        ref.read(progressProvider.notifier).state = cardNum / words.length;
       } else {
         ref.read(cardNumProvider.notifier).state = 0;
-        ref.read(progressProvider.notifier).state = 0.0;
       }
       if (selectedFlashcardId != null) {
         await ref.read(wordViewModelProvider.notifier).toggleInProgress(
@@ -390,7 +385,6 @@ class Buttons extends ConsumerWidget {
               await ref
                   .read(wordViewModelProvider.notifier)
                   .resetInProgress(selectedFlashcardId);
-              ref.read(progressProvider.notifier).state = 0.0;
               ref.read(cardNumProvider.notifier).state = 0;
               Navigator.of(context).pop();
               Navigator.of(context).pop();

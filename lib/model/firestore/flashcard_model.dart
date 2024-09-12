@@ -87,14 +87,4 @@ class Flashcard {
       return word.correctAt.last.compareTo(word.mistookAt.last);
     }
   }
-
-  Future<int> get finishedWordCount async {
-    int falseInProgressCount = 0;
-    for (Word word in words) {
-      if (await word.checkInProgress == false) {
-        falseInProgressCount++;
-      }
-    }
-    return falseInProgressCount;
-  }
 }

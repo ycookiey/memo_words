@@ -187,15 +187,6 @@ class WordViewModel extends StateNotifier<List<Flashcard>> {
     }
   }
 
-  Future<void> getFinishedWordCount(String flashcardId) async {
-    try {
-      await _wordRepository.getFinishedWordCount(flashcardId);
-    } catch (e) {
-      print('Error in getFinishedWordCount: $e');
-      rethrow;
-    }
-  }
-
   Flashcard? getFlashcardById(String flashcardId) {
     return state.firstWhere((flashcard) => flashcard.id == flashcardId);
   }
