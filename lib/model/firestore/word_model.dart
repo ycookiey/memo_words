@@ -70,4 +70,8 @@ class Word {
   int getCorrectCount() {
     return correctAt.length;
   }
+
+  Future<bool> get checkInProgress async {
+    return inProgress;
+  }
 }

@@ -88,10 +88,10 @@ class Flashcard {
     }
   }
 
-  int get finishedWordCount {
+  Future<int> get finishedWordCount async {
     int falseInProgressCount = 0;
     for (Word word in words) {
-      if (word.inProgress == false) {
+      if (await word.checkInProgress == false) {
         falseInProgressCount++;
       }
     }
