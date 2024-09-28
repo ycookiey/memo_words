@@ -35,6 +35,36 @@ class HomePage extends ConsumerWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                ref
+                                    .read(selectedFlashcardIdProvider.notifier)
+                                    .state = flashcard.id;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => WordCardPage('knownWordsTest')),
+                                );
+                              }, 
+                              child: Text('knownWordsTest\n${flashcard.knownWords.length.toString()}',
+                                  textAlign: TextAlign.center,
+                              )
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                ref
+                                    .read(selectedFlashcardIdProvider.notifier)
+                                    .state = flashcard.id;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => WordCardPage('unknownWordsTest')),
+                                );
+                              }, 
+                              child: Text('unknownWordsTest\n${flashcard.unknownWords.length.toString()}',
+                                  textAlign: TextAlign.center,
+                              )
+                            ),
                             IconButton(
                               icon: const Icon(Icons.edit),
                               onPressed: () {
@@ -58,7 +88,7 @@ class HomePage extends ConsumerWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => WordCardPage()),
+                                      builder: (context) => WordCardPage('allWordsTest')),
                                 );
                               },
                             ),

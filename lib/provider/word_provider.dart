@@ -53,6 +53,48 @@ final selectedFlashcardWordsProvider = Provider<List<Word>>((ref) {
   return selectedFlashcard.words;
 });
 
+final knownSelectedFlashcardWordsProvider = Provider<List<Word>>((ref) {
+  final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
+  final flashcards = ref.watch(wordViewModelProvider);
+
+  if (selectedFlashcardId == null) {
+    return [];
+  }
+
+  final selectedFlashcard = flashcards.firstWhere(
+    (flashcard) => flashcard.id == selectedFlashcardId,
+    orElse: () => Flashcard(
+        id: '',
+        name: '',
+        words: [],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now()),
+  );
+
+  return selectedFlashcard.knownWords;
+});
+
+final unknownSelectedFlashcardWordsProvider = Provider<List<Word>>((ref) {
+  final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
+  final flashcards = ref.watch(wordViewModelProvider);
+
+  if (selectedFlashcardId == null) {
+    return [];
+  }
+
+  final selectedFlashcard = flashcards.firstWhere(
+    (flashcard) => flashcard.id == selectedFlashcardId,
+    orElse: () => Flashcard(
+        id: '',
+        name: '',
+        words: [],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now()),
+  );
+
+  return selectedFlashcard.unknownWords;
+});
+
 final finishedWordCountProvider = Provider<int>((ref) {
   final words = ref.watch(selectedFlashcardWordsProvider);
   return words.where((word) => word.inProgress == false).length;

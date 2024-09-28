@@ -4,13 +4,17 @@ import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memo_words/main.dart';
 import 'package:memo_words/provider/word_provider.dart';
+import 'package:memo_words/view/all_words_test.dart';
+import 'package:memo_words/view/known_words_test.dart';
+import 'package:memo_words/view/unknown_words_test.dart';
 
 final cardNumProvider = StateProvider((ref) => 0);
 final reverseProvider = StateProvider((ref) => false);
 final shuffledListProvider = StateProvider<List<int>>((ref) => []);
 
 class WordCardPage extends ConsumerWidget {
-  const WordCardPage({super.key});
+  const WordCardPage(this.testMode, {super.key});
+  final String testMode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,14 +40,34 @@ class WordCardPage extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            const Progress(),
-            FlipCards(),
-            const Buttons(),
-          ],
+          children: testElements(testMode),
         ),
       ),
     );
+  }
+
+  List<Widget> testElements(String testMode) {
+    if (testMode == 'allWordsTest') {
+      return [
+        const Progress(),
+        FlipCards(),
+        const AllTestButtons(),
+      ];
+    } else if (testMode == 'knownWordsTest') {
+      return [
+        const KnownTestProgress(),
+        KnownTestFlipCards(),
+        const KnownTestButtons(),
+      ];
+    } else if (testMode == 'unknownWordsTest') {
+      return [
+        const UnknownTestProgress(),
+        UnknownTestFlipCards(),
+        const UnknownTestButtons(),
+      ];
+    } else {
+      return [];
+    }
   }
 
   void _showSettingsBottomSheet(BuildContext context) {
@@ -117,100 +141,6 @@ class NumberShuffle {
   }
 }
 
-class FlipCards extends ConsumerStatefulWidget {
-  FlipCards({super.key});
-
-  @override
-  ConsumerState<FlipCards> createState() => _FlipCardsState();
-}
-
-class _FlipCardsState extends ConsumerState<FlipCards> {
-  final flipController = FlipCardController();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      var words = ref.read(selectedFlashcardWordsProvider);
-      if (words.isNotEmpty) {
-        var shuffledList = NumberShuffle().getShuffleList(words.length);
-        ref.read(shuffledListProvider.notifier).state = shuffledList;
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var isReverse = ref.watch(reverseProvider);
-    var cardNum = ref.watch(cardNumProvider);
-    var isShuffled = ref.watch(shuffledProvider);
-    var shuffledCardNum = ref.watch(shuffledListProvider);
-    final words = ref.watch(selectedFlashcardWordsProvider);
-
-    Widget buildCard(String content) {
-      return Card(
-        color: const Color(0xffcce3f3),
-        elevation: 10,
-        shadowColor: Colors.black,
-        child: InkWell(
-          onTap: () {
-            flipController.flipcard();
-          },
-          child: SizedBox(
-            width: 275,
-            height: 380,
-            child: Center(child: Text(content)),
-          ),
-        ),
-      );
-    }
-
-    if (words.isEmpty) {
-      return const Text('単語がありません');
-    }
-
-    int currentIndex = isShuffled ? shuffledCardNum[cardNum] : cardNum;
-    Widget frontWidget = buildCard(words[currentIndex].word);
-    Widget backWidget = buildCard(words[currentIndex].meaning);
-
-    return FlipCard(
-      rotateSide: RotateSide.bottom,
-      controller: flipController,
-      animationDuration: const Duration(milliseconds: 300),
-      axis: FlipAxis.horizontal,
-      frontWidget: isReverse ? backWidget : frontWidget,
-      backWidget: isReverse ? frontWidget : backWidget,
-    );
-  }
-}
-
-class Progress extends ConsumerWidget {
-  const Progress({super.key});
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    var cardNum = ref.watch(cardNumProvider);
-    final words = ref.watch(selectedFlashcardWordsProvider);
-    final finishedWordCount = ref.watch(finishedWordCountProvider);
-    double progressValue = 0.0;
-    if (words.isNotEmpty) {
-      progressValue = finishedWordCount / words.length;
-    }
-
-    return Column(
-      children: words.isEmpty
-          ? [const SizedBox()]
-          : [
-              Text('${cardNum + 1} / ${words.length}'),
-              const SizedBox(height: 5),
-              LinearProgressIndicator(
-                value: words.isEmpty ? 0 : progressValue,
-                backgroundColor: const Color(0xffcec5f0),
-              ),
-            ],
-    );
-  }
-}
-
 class WaitableElevatedButton extends StatefulWidget {
 
   WaitableElevatedButton({
@@ -246,13 +176,13 @@ class _WaitableElevatedButtonState extends State<WaitableElevatedButton> {
 }
 
 class Buttons extends ConsumerWidget {
-  const Buttons({super.key});
+  final List words;
+  final int wordsListLength;
+  const Buttons(this.words, this.wordsListLength, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var cardNum = ref.watch(cardNumProvider);
-    final words = ref.watch(selectedFlashcardWordsProvider);
-    final wordsListLength = words.length;
     final selectedFlashcardId = ref.watch(selectedFlashcardIdProvider);
 
     Future<void> nextWord() async {
@@ -393,5 +323,38 @@ class Buttons extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+class AllTestButtons extends ConsumerWidget {
+  const AllTestButtons({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final allWords = ref.watch(selectedFlashcardWordsProvider);
+    final wordsListLength = allWords.length;
+    return Buttons(allWords, wordsListLength);
+  }
+}
+
+class KnownTestButtons extends ConsumerWidget {
+  const KnownTestButtons({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final knownWords = ref.watch(knownSelectedFlashcardWordsProvider);
+    final wordsListLength = knownWords.length;
+    return Buttons(knownWords, wordsListLength);
+  }
+}
+
+class UnknownTestButtons extends ConsumerWidget {
+  const UnknownTestButtons({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unknownWords = ref.watch(unknownSelectedFlashcardWordsProvider);
+    final wordsListLength = unknownWords.length;
+    return Buttons(unknownWords, wordsListLength);
   }
 }
