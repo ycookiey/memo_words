@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:memo_words/model/firestore/flashcard_model.dart';
 import 'package:memo_words/model/firestore/word_model.dart';
+import 'package:memo_words/repository/base_word_repository.dart';
 import 'package:memo_words/repository/word_repository.dart';
 
 class WordViewModel extends StateNotifier<List<Flashcard>> {
-  final WordRepository _wordRepository;
+  final BaseWordRepository _wordRepository;
 
   WordViewModel(this._wordRepository) : super([]) {
     initialize();

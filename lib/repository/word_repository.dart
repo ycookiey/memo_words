@@ -2,8 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:memo_words/model/firestore/flashcard_model.dart';
 import 'package:memo_words/model/firestore/word_model.dart';
+import 'package:memo_words/repository/base_word_repository.dart';
 
-class WordRepository {
+class WordRepository implements BaseWordRepository {
   final FirebaseFirestore firestore;
   final FirebaseAuth firebaseAuth;
 
